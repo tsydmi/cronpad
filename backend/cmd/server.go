@@ -3,16 +3,12 @@ package cmd
 import (
 	"context"
 	"github.com/ts-dmitry/cronpad/backend/rest"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"time"
 )
 
-const databaseName = "cronpad"
-
 func RunApp() {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+	client, mongoConfig, err := createMongoClient()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,6 +20,6 @@ func RunApp() {
 
 	defer client.Disconnect(ctx)
 
-	server := rest.CreateRestServer(client.Database(databaseName))
+	server := rest.CreateRestServer(client.Database(mongoConfig.db))
 	server.Run()
 }

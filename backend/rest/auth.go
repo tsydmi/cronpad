@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const certInfoURL = "http://localhost:9020/auth/realms/master/protocol/openid-connect/certs"
+const certInfoURL = "http://localhost:8080/auth/realms/cronpad/protocol/openid-connect/certs"
 
 type JWKS struct {
 	Keys []JWK
@@ -46,7 +46,14 @@ func CreateAuthService() *AuthService {
 
 func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if token, err := GetAuthTokenFromHeader(r); err != nil || a.verifyToken(token) != nil {
+		token, err := GetAuthTokenFromHeader(r)
+		if err != nil {
+			SendErrorJSON(w, r, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+			return
+		}
+
+		err = a.verifyToken(token)
+		if err != nil {
 			SendErrorJSON(w, r, http.StatusForbidden, err, "user should be logged in", ErrInternal)
 			return
 		}

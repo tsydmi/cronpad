@@ -13,7 +13,7 @@ Vue.prototype.$http = axios
 axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL
 
 let initOptions = {
-    url: process.env.VUE_APP_KEYCLOAK_URL, realm: 'master', clientId: 'vue-frontend', onLoad: 'login-required'
+    url: process.env.VUE_APP_KEYCLOAK_URL, realm: 'cronpad', clientId: 'vue-frontend', onLoad: 'login-required'
 }
 
 let keycloak = Keycloak(initOptions);
