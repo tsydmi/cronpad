@@ -20,9 +20,12 @@ type RestServer struct {
 	authenticator *AuthService
 	httpServer    *http.Server
 
-	tagHandlers   tagHandlers
-	dayHandlers   dayHandlers
-	eventHandlers eventHandlers
+	tagHandlers          tagHandlers
+	dayHandlers          dayHandlers
+	eventHandlers        eventHandlers
+	projectHandlers      projectHandlers
+	adminProjectHandlers adminProjectHandlers
+	userHandlers         userHandlers
 }
 
 type uuidProvider struct {
@@ -32,15 +35,19 @@ func (p *uuidProvider) New() string {
 	return uuid.New().String()
 }
 
-func CreateRestServer(database *mongo.Database) *RestServer {
+func CreateRestServer(database *mongo.Database, keycloakUrl string) *RestServer {
 	uuidProvider := &uuidProvider{}
 	dayStore := repository.CreateDayStore(database, uuidProvider)
+	projectStore := repository.CreateProjectStore(database, uuidProvider)
 
 	return &RestServer{
-		authenticator: CreateAuthService(),
-		tagHandlers:   tagHandlers{store: repository.CreateTagStore(database, uuidProvider)},
-		dayHandlers:   dayHandlers{store: dayStore},
-		eventHandlers: eventHandlers{service: service.CreateEventService(dayStore, uuidProvider)},
+		authenticator:        CreateAuthService(keycloakUrl),
+		tagHandlers:          tagHandlers{store: repository.CreateTagStore(database, uuidProvider)},
+		dayHandlers:          dayHandlers{store: dayStore},
+		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider)},
+		projectHandlers:      projectHandlers{store: projectStore},
+		adminProjectHandlers: adminProjectHandlers{store: projectStore},
+		userHandlers:         userHandlers{service: service.CreateUserService(keycloakUrl)},
 	}
 }
 
@@ -76,31 +83,41 @@ func (s *RestServer) routes() http.Handler {
 	})
 	router.Use(corsMiddleware.Handler)
 
-	router.Route("/api/v1", func(rapi chi.Router) {
-		rapi.Route("/tags", func(radmin chi.Router) {
-			radmin.Use(middleware.Timeout(30 * time.Second))
-			radmin.Use(s.authenticator.HttpMiddleware)
+	router.Route("/api/v1", func(r chi.Router) {
+		r.Use(middleware.Timeout(30 * time.Second))
+		r.Use(s.authenticator.HttpMiddleware)
 
-			radmin.Get("/", s.tagHandlers.findAll)
-			radmin.Post("/", s.tagHandlers.create)
-			radmin.Delete("/{id}", s.tagHandlers.delete)
+		r.Route("/tags", func(routeUser chi.Router) {
+			routeUser.Get("/", s.tagHandlers.findAll)
+			routeUser.Post("/", s.tagHandlers.create)
+			routeUser.Delete("/{id}", s.tagHandlers.delete)
 		})
 
-		rapi.Route("/days", func(radmin chi.Router) {
-			radmin.Use(middleware.Timeout(30 * time.Second))
-			radmin.Use(s.authenticator.HttpMiddleware)
-
-			radmin.Get("/", s.dayHandlers.findByDateRange)
-			radmin.Get("/{date}", s.dayHandlers.findByDate)
+		r.Route("/days", func(routeUser chi.Router) {
+			routeUser.Get("/", s.dayHandlers.findByDateRange)
+			routeUser.Get("/{date}", s.dayHandlers.findByDate)
 		})
 
-		rapi.Route("/events", func(radmin chi.Router) {
-			radmin.Use(middleware.Timeout(30 * time.Second))
-			radmin.Use(s.authenticator.HttpMiddleware)
+		r.Route("/events", func(routeUser chi.Router) {
+			routeUser.Post("/", s.eventHandlers.create)
+			routeUser.Put("/{id}", s.eventHandlers.update)
+			routeUser.Delete("/{id}", s.eventHandlers.delete)
+		})
 
-			radmin.Post("/", s.eventHandlers.create)
-			radmin.Put("/{id}", s.eventHandlers.update)
-			radmin.Delete("/{id}", s.eventHandlers.delete)
+		r.Get("/projects", s.projectHandlers.findAllByUser)
+
+		// Admin
+		r.Route("/admin", func(routeAdmin chi.Router) {
+			// TODO add authentication middleware to allow admin roles only
+
+			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
+				routeAdminProject.Post("/", s.adminProjectHandlers.create)
+				routeAdminProject.Get("/", s.adminProjectHandlers.findAll)
+				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
+				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
+			})
+
+			routeAdmin.Get("/users", s.userHandlers.findAll)
 		})
 	})
 

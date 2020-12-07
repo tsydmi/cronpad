@@ -60,12 +60,12 @@ func getUserInfoFromToken(token string) (UserInfo, error) {
 }
 
 type payload struct {
-	Exp            int      `json:"exp"`
-	Iat            int      `json:"iat"`
-	Auth_time      int      `json:"auth_time"`
-	Jti            string   `json:"jti"`
-	Iss            string   `json:"iss"`
-	Aud            string   `json:"aud"`
+	Exp      int    `json:"exp"`
+	Iat      int    `json:"iat"`
+	AuthTime int    `json:"auth_time"`
+	Jti      string `json:"jti"`
+	Iss      string `json:"iss"`
+	//Aud            string   `json:"aud"`
 	Sub            string   `json:"sub"`
 	Typ            string   `json:"typ"`
 	Azp            string   `json:"azp"`

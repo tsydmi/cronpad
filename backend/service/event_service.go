@@ -55,7 +55,7 @@ func (t *EventService) Update(event repository.Event, userID string) (string, er
 		return "", err
 	}
 
-	events := deleteEvent(day.Events, event.ID)
+	events := deleteEventFromSlice(day.Events, event.ID)
 
 	if len(day.Events) > 0 {
 		day.Events = AddEventProperly(event, events, t.uuidProvider)
@@ -73,12 +73,12 @@ func (t *EventService) Delete(eventID string, userID string) error {
 		return err
 	}
 
-	day.Events = deleteEvent(day.Events, eventID)
+	day.Events = deleteEventFromSlice(day.Events, eventID)
 	_, err = t.dayStore.Update(day)
 	return err
 }
 
-func deleteEvent(events []repository.Event, eventID string) []repository.Event {
+func deleteEventFromSlice(events []repository.Event, eventID string) []repository.Event {
 	result := make([]repository.Event, 0)
 	for i := range events {
 		if events[i].ID != eventID {

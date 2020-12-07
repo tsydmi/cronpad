@@ -38,14 +38,9 @@ func AddEventProperly(event repository.Event, existedEvents []repository.Event, 
 			currentEvent.End = eventBlock.start
 			result = append(result, currentEvent)
 
-			currentEvent = repository.Event{
-				ID:    uuidProvider.New(),
-				Name:  event.Name,
-				Start: eventBlock.end,
-				End:   event.End,
-				TagID: event.TagID,
-				Timed: event.Timed,
-			}
+			currentEvent = event.Copy()
+			currentEvent.ID = uuidProvider.New()
+			currentEvent.Start = eventBlock.end
 
 			result = append(result, eventBlock.events...)
 

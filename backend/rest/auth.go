@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const certInfoURL = "http://localhost:8080/auth/realms/cronpad/protocol/openid-connect/certs"
+const certInfoPath = "/auth/realms/cronpad/protocol/openid-connect/certs"
 
 type JWKS struct {
 	Keys []JWK
@@ -35,8 +35,8 @@ type AuthService struct {
 	publicKey *rsa.PublicKey
 }
 
-func CreateAuthService() *AuthService {
-	jwks, err := getCerts()
+func CreateAuthService(keycloakUrl string) *AuthService {
+	jwks, err := getCerts(keycloakUrl)
 	if err != nil {
 		panic("cannot get certificate")
 	}
@@ -98,12 +98,12 @@ func getPublicKeyFromJWK(key JWK) *rsa.PublicKey {
 	return &rsa.PublicKey{N: z, E: int(exponent)}
 }
 
-func getCerts() (JWKS, error) {
+func getCerts(keycloakUrl string) (JWKS, error) {
 	client := http.Client{
 		Timeout: time.Duration(5 * time.Second),
 	}
 
-	request, err := http.NewRequest("GET", certInfoURL, nil)
+	request, err := http.NewRequest("GET", keycloakUrl+certInfoPath, nil)
 	if err != nil {
 		return JWKS{}, err
 	}

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
@@ -54,7 +55,7 @@ func (t *eventHandlers) update(writer http.ResponseWriter, request *http.Request
 
 	id := chi.URLParam(request, "id")
 	if len(id) == 0 {
-		SendErrorJSON(writer, request, http.StatusBadRequest, err, "id can't be empty", ErrInternal)
+		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("id can't be empty"), "", ErrInternal)
 		return
 	}
 
@@ -89,7 +90,7 @@ func (t *eventHandlers) delete(writer http.ResponseWriter, request *http.Request
 
 	err = t.service.Delete(id, user.ID)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete comment", ErrInternal)
+		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete event", ErrInternal)
 		return
 	}
 

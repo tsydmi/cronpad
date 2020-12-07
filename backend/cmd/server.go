@@ -20,6 +20,6 @@ func RunApp() {
 
 	defer client.Disconnect(ctx)
 
-	server := rest.CreateRestServer(client.Database(mongoConfig.db))
+	server := rest.CreateRestServer(client.Database(mongoConfig.db), "http://localhost:8080")
 	server.Run()
 }

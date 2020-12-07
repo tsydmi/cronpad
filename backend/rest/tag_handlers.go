@@ -15,9 +15,9 @@ type tagHandlers struct {
 }
 
 type TagStore interface {
-	Create(record repository.Tag) (*mongo.InsertOneResult, error)
+	Create(tag repository.Tag) (*mongo.InsertOneResult, error)
 	FindAll(userID string) ([]repository.Tag, error)
-	Delete(timeID string, userID string) error
+	Delete(tagID string, userID string) error
 }
 
 func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request) {
@@ -27,14 +27,14 @@ func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	timeRecords, err := t.store.FindAll(user.ID)
+	tags, err := t.store.FindAll(user.ID)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get time record", ErrInternal)
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get tag", ErrInternal)
 		return
 	}
 
 	render.Status(request, http.StatusOK)
-	render.JSON(writer, request, timeRecords)
+	render.JSON(writer, request, tags)
 }
 
 func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) {
@@ -56,7 +56,7 @@ func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) 
 
 	result, err := t.store.Create(tag)
 	if err != nil || result == nil {
-		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't insert time record", ErrInternal)
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't insert tag", ErrInternal)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (t *tagHandlers) delete(writer http.ResponseWriter, request *http.Request) 
 
 	err = t.store.Delete(id, user.ID)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete comment", ErrInternal)
+		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete tag", ErrInternal)
 		return
 	}
 

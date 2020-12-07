@@ -19,12 +19,13 @@ func (t *Day) PrepareToSend() {
 }
 
 type Event struct {
-	ID    string    `json:"id,omitempty" bson:"_id"`
-	Name  string    `json:"name"`
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
-	TagID string    `json:"tag"`
-	Timed bool      `json:"timed"`
+	ID        string    `json:"id,omitempty" bson:"_id"`
+	Name      string    `json:"name"`
+	Start     time.Time `json:"start"`
+	End       time.Time `json:"end"`
+	TagID     string    `json:"tag"`
+	ProjectID string    `json:"project"`
+	Timed     bool      `json:"timed"`
 }
 
 func (t *Event) PrepareReceived() {
@@ -32,4 +33,16 @@ func (t *Event) PrepareReceived() {
 }
 
 func (t *Event) PrepareToSend() {
+}
+
+func (t *Event) Copy() Event {
+	return Event{
+		ID:        t.ID,
+		Name:      t.Name,
+		Start:     t.Start,
+		End:       t.End,
+		TagID:     t.TagID,
+		ProjectID: t.ProjectID,
+		Timed:     t.Timed,
+	}
 }
