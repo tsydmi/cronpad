@@ -21,14 +21,14 @@ func AddEventProperly(event repository.Event, existedEvents []repository.Event, 
 	for i := range eventBlocks {
 		eventBlock := eventBlocks[i]
 
-		if !eventBlock.end.After(currentEvent.Start) {
+		if beforeOrEquals(eventBlock.end, currentEvent.Start) {
 			// no conflicts: [--] (--)
 			result = append(result, eventBlock.events...)
 
 			continue
 		}
 
-		if eventBlock.start.Before(currentEvent.Start) && eventBlock.end.After(currentEvent.End) {
+		if beforeOrEquals(eventBlock.start, currentEvent.Start) && afterOrEquals(eventBlock.end, currentEvent.End) {
 			// new event is inside an existed event block: [--(--)--]
 			return existedEvents
 		}
@@ -47,14 +47,14 @@ func AddEventProperly(event repository.Event, existedEvents []repository.Event, 
 			continue
 		}
 
-		if eventBlock.start.Before(currentEvent.Start) && eventBlock.end.After(currentEvent.Start) {
+		if beforeOrEquals(eventBlock.start, currentEvent.Start) && eventBlock.end.After(currentEvent.Start) {
 			// only start of event is inside an event block: [--(--]--)
 			result = append(result, eventBlock.events...)
 			currentEvent.Start = eventBlock.end
 			continue
 		}
 
-		if currentEvent.Start.Before(eventBlock.start) && currentEvent.End.After(eventBlock.start) {
+		if currentEvent.Start.Before(eventBlock.start) && afterOrEquals(currentEvent.End, eventBlock.start) {
 			// only end of event is inside event block: (--[--)--]
 			currentEvent.End = eventBlock.start
 			result = append(result, currentEvent)
@@ -66,7 +66,7 @@ func AddEventProperly(event repository.Event, existedEvents []repository.Event, 
 			return result
 		}
 
-		if eventBlock.start.After(currentEvent.End) {
+		if afterOrEquals(eventBlock.start, currentEvent.End) {
 			// no conflicts: (--) [--]
 			result = append(result, currentEvent)
 
@@ -127,4 +127,12 @@ func SortEventsByStartDate(events []repository.Event) []repository.Event {
 		return events[i].Start.Before(events[j].Start)
 	})
 	return events
+}
+
+func beforeOrEquals(comparable time.Time, reference time.Time) bool {
+	return !comparable.After(reference)
+}
+
+func afterOrEquals(comparable time.Time, reference time.Time) bool {
+	return !comparable.Before(reference)
 }

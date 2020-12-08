@@ -31,8 +31,8 @@ func TestSortEventsByStartDate(t *testing.T) {
 	})
 
 	t.Run("Array with a single element", func(t *testing.T) {
-		notSortedArray := []repository.Event{repository.Event{Start: currentTime}}
-		sortedArray := []repository.Event{repository.Event{Start: currentTime}}
+		notSortedArray := []repository.Event{{Start: currentTime}}
+		sortedArray := []repository.Event{{Start: currentTime}}
 
 		result := SortEventsByStartDate(notSortedArray)
 
@@ -44,14 +44,14 @@ func TestSortEventsByStartDate(t *testing.T) {
 
 	t.Run("Array with multiple element", func(t *testing.T) {
 		notSortedArray := []repository.Event{
-			repository.Event{Start: currentTime.Add(3 * time.Minute)},
-			repository.Event{Start: currentTime.Add(1 * time.Minute)},
-			repository.Event{Start: currentTime.Add(2 * time.Minute)},
+			{Start: currentTime.Add(3 * time.Minute)},
+			{Start: currentTime.Add(1 * time.Minute)},
+			{Start: currentTime.Add(2 * time.Minute)},
 		}
 		sortedArray := []repository.Event{
-			repository.Event{Start: currentTime.Add(1 * time.Minute)},
-			repository.Event{Start: currentTime.Add(2 * time.Minute)},
-			repository.Event{Start: currentTime.Add(3 * time.Minute)},
+			{Start: currentTime.Add(1 * time.Minute)},
+			{Start: currentTime.Add(2 * time.Minute)},
+			{Start: currentTime.Add(3 * time.Minute)},
 		}
 
 		result := SortEventsByStartDate(notSortedArray)
@@ -73,7 +73,7 @@ func TestNormalizeEvents(t *testing.T) {
 			Name:  "New Event",
 		}
 
-		emptyArray := []repository.Event{}
+		var emptyArray []repository.Event
 
 		result := AddEventProperly(event, emptyArray, mockedUuidProvider{})
 
@@ -163,14 +163,14 @@ func TestNormalizeEvents(t *testing.T) {
 
 		expectedResults := []repository.Event{
 			endInside,
-			repository.Event{
+			{
 				ID:    event.ID,
 				Name:  event.Name,
 				Start: currentTime.Add(3 * time.Hour),
 				End:   currentTime.Add(4 * time.Hour),
 			},
 			wholeEventInside,
-			repository.Event{
+			{
 				ID:    "new-uuid",
 				Name:  event.Name,
 				Start: currentTime.Add(5 * time.Hour),
@@ -178,6 +178,44 @@ func TestNormalizeEvents(t *testing.T) {
 			},
 			connectedToNext,
 			startInside,
+		}
+		for i := range result {
+			assert.Exactly(t, expectedResults[i], result[i], "should return correct result")
+		}
+	})
+
+	t.Run("Existed events have common start or end with a new one", func(t *testing.T) {
+		// scheme: [--(--]--[--]--[--][--)--]
+
+		event := repository.Event{
+			ID:    uuid.New().String(),
+			Name:  "New Event",
+			Start: currentTime.Add(3 * time.Hour),
+			End:   currentTime.Add(4 * time.Hour),
+		}
+
+		commonEnd := repository.Event{
+			ID:    uuid.New().String(),
+			Name:  "Common End",
+			Start: currentTime.Add(1 * time.Hour),
+			End:   currentTime.Add(3 * time.Hour),
+		}
+
+		commonStart := repository.Event{
+			ID:    uuid.New().String(),
+			Name:  "Common Start",
+			Start: currentTime.Add(4 * time.Hour),
+			End:   currentTime.Add(5 * time.Hour),
+		}
+
+		result := AddEventProperly(event, []repository.Event{commonEnd, commonStart}, mockedUuidProvider{})
+
+		assert.Len(t, result, 3, "should have all elements")
+
+		expectedResults := []repository.Event{
+			commonEnd,
+			event,
+			commonStart,
 		}
 		for i := range result {
 			assert.Exactly(t, expectedResults[i], result[i], "should return correct result")
