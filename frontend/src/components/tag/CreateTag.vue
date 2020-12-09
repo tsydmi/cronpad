@@ -61,7 +61,7 @@
 import axios from 'axios'
 
 export default {
-  name: "CreateTags",
+  name: "CreateTag",
   props: {
     dialog: Boolean,
     tags: Array
