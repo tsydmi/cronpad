@@ -6,13 +6,15 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
+	"github.com/go-playground/validator/v10"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type adminProjectHandlers struct {
-	store AdminProjectStore
+	validator *validator.Validate
+	store     AdminProjectStore
 }
 
 type AdminProjectStore interface {
@@ -27,6 +29,12 @@ func (t *adminProjectHandlers) create(writer http.ResponseWriter, request *http.
 	err := json.NewDecoder(request.Body).Decode(&project)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.Struct(project)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -64,6 +72,12 @@ func (t *adminProjectHandlers) update(writer http.ResponseWriter, request *http.
 	err := json.NewDecoder(request.Body).Decode(&project)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.Struct(project)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 

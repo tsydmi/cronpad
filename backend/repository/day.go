@@ -20,12 +20,12 @@ func (t *Day) PrepareToSend() {
 
 type Event struct {
 	ID        string    `json:"id,omitempty" bson:"_id"`
-	Name      string    `json:"name"`
-	Start     time.Time `json:"start"`
-	End       time.Time `json:"end"`
-	TagID     string    `json:"tag"`
+	Name      string    `json:"name" validate:"required"`
+	Start     time.Time `json:"start" validate:"required"`
+	End       time.Time `json:"end" validate:"required"`
+	TagID     string    `json:"tag" validate:"required"`
 	ProjectID string    `json:"project"`
-	Timed     bool      `json:"timed"`
+	Timed     bool      `json:"timed" validate:"required"`
 }
 
 func (t *Event) PrepareReceived() {

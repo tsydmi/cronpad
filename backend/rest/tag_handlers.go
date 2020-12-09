@@ -5,13 +5,15 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
+	"github.com/go-playground/validator/v10"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type tagHandlers struct {
-	store TagStore
+	store     TagStore
+	validator *validator.Validate
 }
 
 type TagStore interface {
@@ -48,6 +50,12 @@ func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) 
 	err = json.NewDecoder(request.Body).Decode(&tag)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.Struct(tag)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 

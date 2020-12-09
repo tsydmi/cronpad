@@ -6,12 +6,14 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
+	"github.com/go-playground/validator/v10"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"net/http"
 )
 
 type eventHandlers struct {
-	service EventService
+	validator *validator.Validate
+	service   EventService
 }
 
 type EventService interface {
@@ -31,6 +33,12 @@ func (t *eventHandlers) create(writer http.ResponseWriter, request *http.Request
 	err = json.NewDecoder(request.Body).Decode(&event)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.Struct(event)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -63,6 +71,12 @@ func (t *eventHandlers) update(writer http.ResponseWriter, request *http.Request
 	err = json.NewDecoder(request.Body).Decode(&event)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.Struct(event)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 

@@ -10,8 +10,14 @@ import (
 )
 
 const (
-	ErrInternal = 0
+	ErrInternal   = 0
+	ErrValidation = 1
 )
+
+func SendValidationErrorJSON(w http.ResponseWriter, r *http.Request, err error) {
+	render.Status(r, http.StatusBadRequest)
+	render.JSON(w, r, rest.JSON{"error": err.Error(), "code": ErrValidation})
+}
 
 func SendErrorJSON(w http.ResponseWriter, r *http.Request, httpStatusCode int, err error, details string, errCode int) {
 	log.Printf("[WARN] %s", errMsg(r, httpStatusCode, err, details, errCode))
