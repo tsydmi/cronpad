@@ -63,8 +63,14 @@ import axios from 'axios'
 export default {
   name: "CreateTag",
   props: {
-    dialog: Boolean,
-    tags: Array
+    dialog: {
+      type: Boolean,
+      required: true,
+    },
+    tags: {
+      type: Array,
+      required: true,
+    },
   },
   data: () => ({
     newTag: {},

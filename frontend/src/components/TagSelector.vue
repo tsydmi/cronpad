@@ -16,7 +16,8 @@
             <v-icon>mdi-plus</v-icon>
           </v-btn>
         </template>
-        <CreateTag :dialog="createTagDialog" :tags="tags" @closeDialog="createTagDialog = false" @refreshTags="refreshTags"/>
+        <CreateTag :dialog="createTagDialog" :tags="tags" @closeDialog="createTagDialog = false"
+                   @refreshTags="refreshTags"/>
       </v-dialog>
       <v-spacer></v-spacer>
       <v-dialog
@@ -32,7 +33,8 @@
             <v-icon>mdi-cog-outline</v-icon>
           </v-btn>
         </template>
-        <ConfigureTags :dialog="configureTagDialog" :tags="tags" @closeDialog="configureTagDialog = false" @refreshTags="refreshTags"/>
+        <ConfigureTags :dialog="configureTagDialog" :tags="tags" @closeDialog="configureTagDialog = false"
+                       @refreshTags="refreshTags"/>
       </v-dialog>
     </v-row>
     <v-row
@@ -63,8 +65,14 @@ import ConfigureTags from "@/components/tag/ConfigureTags";
 export default {
   components: {CreateTag, ConfigureTags},
   props: {
-    tags: Array,
-    selectedTag: Object
+    tags: {
+      type: Array,
+      required: true,
+    },
+    selectedTag: {
+      type: Object,
+      required: false,
+    },
   },
   data: () => ({
     createTagDialog: false,
@@ -78,12 +86,12 @@ export default {
         this.$emit('changeSelectedTag', tag)
       }
     },
-    refreshTags(){
+    refreshTags() {
       this.$emit('refreshTags', null)
     },
     configureTags() {
 
-    }
+    },
   }
 }
 </script>

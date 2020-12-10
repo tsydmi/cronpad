@@ -29,7 +29,10 @@ export default {
   },
 
   props: {
-    keycloak: Object
+    keycloak: {
+      type: Object,
+      required: true,
+    },
   },
   data: () => ({
     //

@@ -49,9 +49,25 @@
 export default {
   name: "IntegrationTable",
 
-  props: {
-    integrations: Array
-  }
+  data: () => ({
+    integrations: [
+      {
+        name: "Google Calendar",
+        enabled: true,
+        disabled: false
+      },
+      {
+        name: "Bitbucket",
+        enabled: false,
+        disabled: true
+      },
+      {
+        name: "GitLab",
+        enabled: false,
+        disabled: true
+      }
+    ],
+  }),
 }
 </script>
 

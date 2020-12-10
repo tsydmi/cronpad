@@ -51,10 +51,18 @@
 <script>
 export default {
   props: {
-    today: String,
-    value: String,
-    updateValue: Function,
-    events: Array
+    today: {
+      type: String,
+      required: true,
+    },
+    value: {
+      type: String,
+      required: true,
+    },
+    events: {
+      type: Array,
+      required: true,
+    },
   },
   data: () => ({
     selectedWeekFirstDay: Date,

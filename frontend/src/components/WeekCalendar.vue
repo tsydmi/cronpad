@@ -129,9 +129,18 @@ import axios from 'axios'
 
 export default {
   props: {
-    value: String,
-    selectedTag: Object,
-    events: Array
+    value: {
+      type: String,
+      required: true,
+    },
+    selectedTag: {
+      type: Object,
+      required: false,
+    },
+    events: {
+      type: Array,
+      required: true,
+    },
   },
   data: () => ({
     dragEvent: null,

@@ -45,8 +45,14 @@ import axios from 'axios'
 export default {
   name: "ConfigureTags",
   props: {
-    dialog: Boolean,
-    tags: Array
+    dialog: {
+      type: Boolean,
+      required: true,
+    },
+    tags: {
+      type: Array,
+      required: true,
+    },
   },
   data: () => ({}),
   methods: {

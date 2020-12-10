@@ -43,7 +43,7 @@
           ></v-switch>
           <v-simple-table v-if="configuration.enableIntegrations">
             <template v-slot:default>
-              <IntegrationTable :integrations="integrations"/>
+              <IntegrationTable/>
             </template>
           </v-simple-table>
         </v-form>
@@ -66,23 +66,6 @@ export default {
       enableIntegrations: true,
     },
     timeFormat: "12H",
-    integrations: [
-      {
-        name: "Google Calendar",
-        enabled: true,
-        disabled: false
-      },
-      {
-        name: "Bitbucket",
-        enabled: false,
-        disabled: true
-      },
-      {
-        name: "GitLab",
-        enabled: false,
-        disabled: true
-      }
-    ]
   }),
 };
 </script>
