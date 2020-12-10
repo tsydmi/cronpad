@@ -36,11 +36,11 @@ export default {
   },
 
   data: () => ({
-    today: Date,
-    value: Date,
-    selectedWeekFirstDay: Date,
-    selectedWeekLastDay: Date,
-    selectedDay: Date,
+    today: null,
+    value: null,
+    selectedWeekFirstDay: null,
+    selectedWeekLastDay: null,
+    selectedDay: null,
     tags: [],
     events: [],
     selectedTag: null

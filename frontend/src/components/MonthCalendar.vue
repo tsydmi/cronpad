@@ -65,8 +65,8 @@ export default {
     },
   },
   data: () => ({
-    selectedWeekFirstDay: Date,
-    selectedWeekLastDay: Date,
+    selectedWeekFirstDay: null,
+    selectedWeekLastDay: null,
     selectedMonth: null,
     monthNames: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   }),
