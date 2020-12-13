@@ -87,7 +87,7 @@
                 label="name"
                 hide-details="auto"
                 v-model="selectedEvent.name"
-                v-on:change="updateEvent(selectedEvent)"
+                @change="updateEvent(selectedEvent)"
                 required
             ></v-text-field>
           </v-toolbar>
@@ -97,7 +97,7 @@
                 hide-details="auto"
                 :rules="timeRules"
                 :value="getTime(selectedEvent.start)"
-                v-on:change="updateStartTime"
+                @change="updateStartTime"
                 required
             ></v-text-field>
             <v-text-field
@@ -105,7 +105,7 @@
                 hide-details="auto"
                 :rules="timeRules"
                 :value="getTime(selectedEvent.end)"
-                v-on:change="updateEndTime"
+                @change="updateEndTime"
                 required
             ></v-text-field>
           </v-card-text>
