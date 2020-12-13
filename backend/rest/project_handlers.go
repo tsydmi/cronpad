@@ -17,7 +17,7 @@ type ProjectStore interface {
 func (t *projectHandlers) findAllByUser(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 

@@ -23,20 +23,20 @@
         <v-divider vertical></v-divider>
 
         <v-btn text color="primary" to="/">
-          <i class="fas fa-home"></i>
+          <em class="fas fa-home"></em>
         </v-btn>
 
         <v-divider vertical></v-divider>
 
         <v-btn text color="primary" to="/working-time">
-          <i class="far fa-calendar-alt pr-2"></i>
+          <em class="far fa-calendar-alt pr-2"></em>
           Working time
         </v-btn>
 
         <v-divider vertical></v-divider>
 
         <v-btn text color="secondary" to="/settings">
-          <i class="fas fa-cogs"></i>
+          <em class="fas fa-cogs"></em>
         </v-btn>
 
         <v-divider vertical></v-divider>

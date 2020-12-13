@@ -52,7 +52,6 @@
       </span>
       <v-spacer></v-spacer>
       <v-icon v-bind:color="tag.color">mdi-format-color-highlight</v-icon>
-      <!--      <v-icon v-bind:color="tag.color">mdi-tag</v-icon>-->
     </v-row>
 
   </div>

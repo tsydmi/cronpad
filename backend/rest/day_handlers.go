@@ -24,7 +24,7 @@ type DayStore interface {
 func (t *dayHandlers) findByDate(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func (t *dayHandlers) findByDate(writer http.ResponseWriter, request *http.Reque
 func (t *dayHandlers) findByDateRange(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 

@@ -33,6 +33,7 @@ func (t *Event) PrepareReceived() {
 }
 
 func (t *Event) PrepareToSend() {
+	// Event doesn't have anything to clean before sending
 }
 
 func (t *Event) Copy() Event {

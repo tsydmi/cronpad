@@ -379,10 +379,6 @@ export default {
   background: none !important;
 }
 
-.theme--light.v-calendar-daily .v-calendar-daily__intervals-body {
-
-}
-
 .theme--light.v-calendar-daily .v-calendar-daily__day {
   border-right: none !important;
 }

@@ -6,9 +6,7 @@
       <v-container
           class="d-flex justify-center mb-6"
           fluid>
-        <!--        <v-container>-->
         <router-view/>
-        <!--        </v-container>-->
       </v-container>
     </v-main>
 

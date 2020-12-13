@@ -48,13 +48,13 @@ func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := GetAuthTokenFromHeader(r)
 		if err != nil {
-			SendErrorJSON(w, r, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+			SendAuthorizationErrorJSON(w, r, err)
 			return
 		}
 
 		err = a.verifyToken(token)
 		if err != nil {
-			SendErrorJSON(w, r, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+			SendAuthorizationErrorJSON(w, r, err)
 			return
 		}
 		next.ServeHTTP(w, r)

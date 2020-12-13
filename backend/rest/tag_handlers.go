@@ -25,7 +25,7 @@ type TagStore interface {
 func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request)
 func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) 
 func (t *tagHandlers) delete(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 

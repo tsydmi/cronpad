@@ -12,11 +12,19 @@ import (
 const (
 	ErrInternal   = 0
 	ErrValidation = 1
+	ErrAuthorization = 2
 )
 
 func SendValidationErrorJSON(w http.ResponseWriter, r *http.Request, err error) {
 	render.Status(r, http.StatusBadRequest)
 	render.JSON(w, r, rest.JSON{"error": err.Error(), "code": ErrValidation})
+}
+
+func SendAuthorizationErrorJSON(w http.ResponseWriter, r *http.Request, err error) {
+	log.Printf("[WARN] %s", err.Error())
+
+	render.Status(r, http.StatusForbidden)
+	render.JSON(w, r, rest.JSON{"error": "user should be logged in", "code": ErrAuthorization})
 }
 
 func SendErrorJSON(w http.ResponseWriter, r *http.Request, httpStatusCode int, err error, details string, errCode int) {

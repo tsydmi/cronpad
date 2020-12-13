@@ -25,7 +25,7 @@ type EventService interface {
 func (t *eventHandlers) create(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (t *eventHandlers) create(writer http.ResponseWriter, request *http.Request
 func (t *eventHandlers) update(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
@@ -96,7 +96,7 @@ func (t *eventHandlers) update(writer http.ResponseWriter, request *http.Request
 func (t *eventHandlers) delete(writer http.ResponseWriter, request *http.Request) {
 	user, err := GetUserInfo(request)
 	if err != nil {
-		SendErrorJSON(writer, request, http.StatusForbidden, err, "user should be logged in", ErrInternal)
+		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
