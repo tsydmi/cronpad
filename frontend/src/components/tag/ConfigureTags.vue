@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import TagService from "@/service/TagService";
 
 export default {
   name: "ConfigureTags",
@@ -57,12 +57,8 @@ export default {
   data: () => ({}),
   methods: {
     deleteTag(tag) {
-      console.log('deleting')
-      axios.delete(`/tags/${tag.id}`)
-          .then((response) => {
-            if (response.status >= 200 && response.status < 300)
-              this.$emit('refreshTags', null)
-          })
+      TagService.delete(tag)
+          .then(() => this.$emit('refreshTags', null))
     },
     closeDialog() {
       this.$emit('closeDialog', null)

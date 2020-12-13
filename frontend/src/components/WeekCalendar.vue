@@ -125,7 +125,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import EventService from "@/service/EventService";
 
 export default {
   props: {
@@ -328,46 +328,18 @@ export default {
               : event.color
     },
     saveEvent(event) {
-      let body = {
-        start: new Date(event.start).toISOString(),
-        end: new Date(event.end).toISOString(),
-        name: event.name,
-        tag: event.tag,
-        timed: event.timed
-      }
-
-      axios.post('/events', body)
-          .then(response => {
-            if (response.status >= 200 && response.status < 300) {
-              this.$emit('refreshEvents', null)
-            }
-          })
+      EventService.create(event)
+          .then(() => this.$emit('refreshEvents', null))
     },
     updateEvent(event) {
-      let body = {
-        start: new Date(event.start).toISOString(),
-        end: new Date(event.end).toISOString(),
-        name: event.name,
-        tag: event.tag.id,
-        timed: event.timed
-      }
-
-      axios.put(`/events/${event.id}`, body)
-          .then(response => {
-            if (response.status >= 200 && response.status < 300) {
-              this.$emit('refreshEvents', null)
-            }
-          })
+      EventService.update(event)
+          .then(() => this.$emit('refreshEvents', null))
     },
     deleteEvent(event) {
       this.detailsModalOpen = false
 
-      axios.delete(`/events/${event.id}`)
-          .then(response => {
-            if (response.status >= 200 && response.status < 300) {
-              this.$emit('refreshEvents', null)
-            }
-          })
+      EventService.delete(event)
+          .then(() => this.$emit('refreshEvents', null))
     },
   },
   created() {

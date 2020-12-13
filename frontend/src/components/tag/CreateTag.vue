@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import TagService from "@/service/TagService";
 
 export default {
   name: "CreateTag",
@@ -85,15 +85,11 @@ export default {
   }),
   methods: {
     saveTag() {
-      let color = this.newTag.color;
-      this.newTag.color = color.hex
-
-      axios.post('/tags', this.newTag)
-      .then((response) => {
-        if (response.status >= 200 && response.status < 300)
-        this.$emit('refreshTags', null)
-        this.closeDialog()
-      })
+      TagService.create(this.newTag)
+          .then(() => {
+            this.$emit('refreshTags', null)
+            this.closeDialog()
+          })
     },
     closeDialog() {
       this.$emit('closeDialog', null)

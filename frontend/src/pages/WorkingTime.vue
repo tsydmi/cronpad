@@ -21,10 +21,11 @@
 </template>
 
 <script>
-import WeekCalendar from '../components/WeekCalendar';
-import MonthCalendar from '../components/MonthCalendar';
+import WeekCalendar from '@/components/WeekCalendar';
+import MonthCalendar from '@/components/MonthCalendar';
 import TagSelector from "@/components/TagSelector";
-import axios from 'axios'
+import TagService from '@/service/TagService'
+import DayService from '@/service/DayService'
 
 export default {
   name: 'WorkingTime',
@@ -56,7 +57,7 @@ export default {
       this.events.push(event)
     },
     refreshTags() {
-      axios.get('/tags')
+      TagService.findAll()
           .then(response => this.tags = response.data);
       this.selectedTag = null
     },
@@ -67,17 +68,10 @@ export default {
       var lastDayOfMonth = new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 0));
 
       firstDayOfMonth.setDate(firstDayOfMonth.getDate() - this.getRealDayOfWeek(firstDayOfMonth))
-      let firstDay = firstDayOfMonth.toISOString().split('T')[0]
-
       lastDayOfMonth.setDate(lastDayOfMonth.getDate() + (6 - this.getRealDayOfWeek(lastDayOfMonth)))
-      let lastDay = lastDayOfMonth.toISOString().split('T')[0]
 
-      axios.get(`/days?from=${firstDay}&to=${lastDay}`)
-          .then(response => {
-            if (response.status >= 200 && response.status < 300) {
-              this.events = this.convertToEvents(response.data)
-            }
-          });
+      DayService.findByDayRange(firstDayOfMonth, lastDayOfMonth)
+          .then(response => this.events = this.convertToEvents(response.data));
     },
     convertToEvents(days) {
       let events = []
