@@ -10,20 +10,17 @@
       </v-container>
     </v-main>
 
-    <Footer/>
   </v-app>
 </template>
 
 <script>
-import Header from './components/template/Header';
-import Footer from './components/template/Footer';
+import Header from './components/template/Header'
 
 export default {
   name: 'App',
 
   components: {
     Header,
-    Footer
   },
 
   props: {
@@ -41,5 +38,9 @@ export default {
 <style>
 .theme--light.v-application {
   background-image: linear-gradient(#e6f0f7, #e6f0f0) !important;
+}
+
+html {
+  font-size: 1rem;
 }
 </style>

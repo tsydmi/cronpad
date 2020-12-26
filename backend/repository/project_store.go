@@ -53,6 +53,30 @@ func (t *ProjectStore) FindAllProjectsByUser(userID string) ([]Project, error) {
 	return getProjectResults(cursor)
 }
 
+func (t *ProjectStore) Search(form ProjectSearchForm) ([]Project, error) {
+	filters := bson.D{}
+	if len(form.Name) > 0 {
+		filters = append(filters, bson.E{Key: "name", Value: likeRegex(form.Name)})
+	}
+
+	if len(form.Description) > 0 {
+		filters = append(filters, bson.E{Key: "description", Value: likeRegex(form.Description)})
+	}
+
+	if form.Users != nil && len(form.Users) > 0 {
+		filters = append(filters, bson.E{Key: "users", Value: bson.D{
+			{"$all", form.Users},
+		}})
+	}
+
+	cursor, err := t.collection.Find(context.TODO(), filters)
+	if err != nil {
+		return nil, err
+	}
+
+	return getProjectResults(cursor)
+}
+
 func (t *ProjectStore) Update(project Project) (string, error) {
 	filter := bson.D{{"_id", project.ID}}
 	var updatedProject Project
@@ -83,4 +107,10 @@ func getProjectResults(cursor *mongo.Cursor) ([]Project, error) {
 	}
 
 	return results, nil
+}
+
+type ProjectSearchForm struct {
+	Name        string
+	Description string
+	Users       []string
 }

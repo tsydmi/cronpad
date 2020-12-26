@@ -6,46 +6,38 @@
     <div class="d-flex align-center">
       <v-img
           alt="Cronpad Logo"
-          class="shrink mr-2"
+          class="shrink ma-5"
           contain
           src="@/assets/icon.svg"
           transition="scale-transition"
           width="40"
       />
 
-      <h1 class="display-1 font-weight-bold mb-3 primary--text pt-2">
-        Cronpad
-      </h1>
+      <span> CRONPAD </span>
     </div>
 
-    <v-toolbar>
-      <v-toolbar-items>
-        <v-divider vertical></v-divider>
+    <v-container>
+      <v-tabs>
+        <v-tabs-slider color="yellow"></v-tabs-slider>
 
-        <v-btn text color="primary" to="/">
+        <v-tab to="/">
           <em class="fas fa-home"></em>
-        </v-btn>
-
-        <v-divider vertical></v-divider>
-
-        <v-btn text color="primary" to="/working-time">
-          <em class="far fa-calendar-alt pr-2"></em>
+        </v-tab>
+        <v-tab to="/working-time">
           Working time
-        </v-btn>
-
-        <v-divider vertical></v-divider>
-
-        <v-btn text color="secondary" to="/settings">
+        </v-tab>
+        <v-tab to="/projects">
+          Projects
+        </v-tab>
+        <v-tab to="/settings">
           <em class="fas fa-cogs"></em>
-        </v-btn>
+        </v-tab>
 
-        <v-divider vertical></v-divider>
-      </v-toolbar-items>
-    </v-toolbar>
-
+      </v-tabs>
+    </v-container>
 
     <div class="d-flex align-center">
-      <h4 class="pa-2 secondary--text">{{ user.fullName }}</h4>
+      <h4 class="pa-2 inactive--text">{{ user.fullName }}</h4>
       <v-menu
           rounded
           offset-y
@@ -56,7 +48,7 @@
               v-on="on"
           >
             <v-avatar
-                color="purple"
+                color="primary"
             >
               <span class="white--text">{{ user.initials }}</span>
             </v-avatar>
@@ -65,15 +57,6 @@
         <v-card>
           <v-list-item-content class="justify-center">
             <div class="mx-auto text-center">
-              <v-avatar
-                  color="purple"
-              >
-                <span class="white--text headline">{{ user.initials }}</span>
-              </v-avatar>
-              <p class="caption mt-1">
-                {{ user.email }}
-              </p>
-              <v-divider class="my-3"></v-divider>
               <v-btn
                   disabled
                   depressed

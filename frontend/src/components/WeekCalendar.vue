@@ -2,6 +2,31 @@
   <div>
     <v-sheet
         tile
+        class="d-flex justify-end pa-5"
+    >
+      <span class="pa-2"> Projects: </span>
+      <div
+          v-for="project in projects"
+          v-bind:key="project.id"
+          class="pl-3"
+      >
+        <v-btn depressed outlined
+               :color="project === selectedProject ? 'primary' : ''"
+               @click="selectProject(project)">
+          {{ project.name }}
+        </v-btn>
+      </div>
+
+      <span
+          v-if="!projects || projects.length === 0"
+          class="pa-2 inactive--text"
+      >
+        Your user is not assign to any project yet
+      </span>
+    </v-sheet>
+
+    <v-sheet
+        tile
         class="d-flex pa-2"
     >
       <v-btn
@@ -108,6 +133,25 @@
                 @change="updateEndTime"
                 required
             ></v-text-field>
+            <v-select
+                label="Tag"
+                class="mt-7"
+                :items="tags"
+                v-model="selectedEvent.tag"
+                v-on:change="updateEvent(selectedEvent)"
+                item-text="name"
+                return-object
+                outlined
+            />
+            <v-select
+                label="Project"
+                :items="projects"
+                v-model="selectedEvent.project"
+                v-on:change="updateEvent(selectedEvent)"
+                item-text="name"
+                return-object
+                outlined
+            />
           </v-card-text>
         </v-form>
         <v-card-actions>
@@ -141,11 +185,20 @@ export default {
       type: Array,
       required: true,
     },
+    tags: {
+      type: Array,
+      required: true,
+    },
+    projects: {
+      type: Array,
+      required: true,
+    },
   },
   data: () => ({
     dragEvent: null,
     extendEvent: null,
     createEvent: null,
+    selectedProject: null,
     selectedEvent: {},
     selectedEventValid: true,
     selectedElement: null,
@@ -247,7 +300,8 @@ export default {
           start: start,
           end: start,
           timed: true,
-          tag: this.selectedTag.id,
+          tag: this.selectedTag,
+          project: this.selectedProject,
         }
 
         this.$emit('addEventToList', this.createEvent)
@@ -321,11 +375,26 @@ export default {
       const g = (rgb >> 8) & 0xFF
       const b = (rgb >> 0) & 0xFF
 
-      return event === this.dragEvent
-          ? `rgba(${r}, ${g}, ${b}, 0.7)`
-          : event === this.createEvent
-              ? `rgba(${r}, ${g}, ${b}, 0.7)`
-              : event.color
+      if (event === this.dragEvent) {
+        return `rgba(${r}, ${g}, ${b}, 0.7)`
+      }
+
+      if (event === this.createEvent) {
+        return `rgba(${r}, ${g}, ${b}, 0.7)`
+      }
+
+      if (this.selectedProject && event.project !== this.selectedProject) {
+        return `rgba(${r}, ${g}, ${b}, 0.4)`
+      }
+
+      return event.color
+    },
+    selectProject(project) {
+      if (project === this.selectedProject) {
+        this.selectedProject = null
+      } else {
+        this.selectedProject = project
+      }
     },
     saveEvent(event) {
       EventService.create(event)

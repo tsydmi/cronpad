@@ -5,7 +5,7 @@
       :key="item.name"
   >
     <td>
-      <span v-bind:class=" item.enabled ? 'success--text' : 'secondary--text'">
+      <span v-bind:class=" item.enabled ? 'success--text' : 'inactive--text'">
         {{ item.name }}
       </span>
     </td>

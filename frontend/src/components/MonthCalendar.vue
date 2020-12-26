@@ -12,7 +12,7 @@
               v-bind:class="['d-flex justify-center',
               {
                 'v-calendar-month--selected-week': isSelectedWeek(date),
-                'secondary--text': !isCurrentMonth(month),
+                'inactive--text': !isCurrentMonth(month),
                 'primary--text font-weight-bold': present
               }]"
           >
@@ -152,8 +152,6 @@ export default {
 
 <style scoped>
 .v-calendar-month--selected-week {
-  /*background: var(--v-secondary-base);*/
   background-color: #b0bec51f;
-
 }
 </style>

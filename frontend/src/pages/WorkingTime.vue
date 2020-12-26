@@ -2,10 +2,12 @@
   <v-row dense>
     <v-col lg="9" md="8" sm="12">
       <v-card elevation="4">
-        <WeekCalendar :value="value" :selected-tag="selectedTag" :events="events"
-                      @addEventToList="addEventToList"
-                      @refreshEvents="refreshEvents"
-                      @changeCalendarValue="updateValue"/>
+        <WeekCalendar
+            :events="events" :projects="projects" :tags="tags"
+            :value="value" :selected-tag="selectedTag"
+            @addEventToList="addEventToList"
+            @refreshEvents="refreshEvents"
+            @changeCalendarValue="updateValue"/>
       </v-card>
     </v-col>
     <v-col lg="3" md="4" sm="12" class="pl-4 pr-4">
@@ -21,11 +23,12 @@
 </template>
 
 <script>
-import WeekCalendar from '@/components/WeekCalendar';
-import MonthCalendar from '@/components/MonthCalendar';
-import TagSelector from "@/components/TagSelector";
+import WeekCalendar from '@/components/WeekCalendar'
+import MonthCalendar from '@/components/MonthCalendar'
+import TagSelector from "@/components/TagSelector"
 import TagService from '@/service/TagService'
 import DayService from '@/service/DayService'
+import ProjectService from "@/service/ProjectService"
 
 export default {
   name: 'WorkingTime',
@@ -43,8 +46,10 @@ export default {
     selectedWeekLastDay: null,
     selectedDay: null,
     tags: [],
+    projects: [],
     events: [],
-    selectedTag: null
+    selectedTag: null,
+    selectedProject: null
   }),
   methods: {
     updateValue(value) {
@@ -60,6 +65,10 @@ export default {
       TagService.findAll()
           .then(response => this.tags = response.data);
       this.selectedTag = null
+    },
+    refreshProjects() {
+      ProjectService.findCurrentUserProjects()
+          .then(response => this.projects = response.data);
     },
     refreshEvents() {
       let date = new Date(this.value)
@@ -87,6 +96,7 @@ export default {
                 end: new Date(event.end),
                 timed: event.timed,
                 tag: tag,
+                project: this.getProjectById(event.project),
                 color: tag ? tag.color : '#7d7d7d' // TODO replace by something global
               })
             })
@@ -96,6 +106,9 @@ export default {
     },
     getTagById(tagId) {
       return this.tags.find(tag => tag.id === tagId);
+    },
+    getProjectById(projectId) {
+      return this.projects.find(project => project.id === projectId)
     },
     getRealDayOfWeek(date) {
       return (date.getDay() + 6) % 7
@@ -107,6 +120,7 @@ export default {
     this.value = date.toISOString().split('T')[0]
 
     this.refreshTags()
+    this.refreshProjects()
     this.refreshEvents()
   }
 };

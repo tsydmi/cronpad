@@ -22,6 +22,7 @@ type AdminProjectStore interface {
 	FindAll() ([]repository.Project, error)
 	Update(record repository.Project) (string, error)
 	Delete(projectID string) error
+	Search(form repository.ProjectSearchForm) ([]repository.Project, error)
 }
 
 func (t *adminProjectHandlers) create(writer http.ResponseWriter, request *http.Request) {
@@ -105,4 +106,22 @@ func (t *adminProjectHandlers) delete(writer http.ResponseWriter, request *http.
 
 	render.Status(request, http.StatusOK)
 	render.JSON(writer, request, R.JSON{"id": id})
+}
+
+func (t *adminProjectHandlers) search(writer http.ResponseWriter, request *http.Request) {
+	var form repository.ProjectSearchForm
+	err := json.NewDecoder(request.Body).Decode(&form)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	report, err := t.store.Search(form)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get projects", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, report)
 }
