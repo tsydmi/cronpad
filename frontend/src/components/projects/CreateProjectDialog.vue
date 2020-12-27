@@ -107,9 +107,7 @@ export default {
   },
   watch: {
     'value': function () {
-      if (this.$refs.form) {
-        this.$refs.form.reset()
-      }
+      this.$refs.form.reset()
     }
   }
 }

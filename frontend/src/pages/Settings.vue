@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import IntegrationTable from "@/components/IntegrationTable";
+import IntegrationTable from "@/components/settings/IntegrationTable";
 
 export default {
   name: 'Settings',

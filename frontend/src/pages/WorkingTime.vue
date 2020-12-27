@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import WeekCalendar from '@/components/WeekCalendar'
-import MonthCalendar from '@/components/MonthCalendar'
-import TagSelector from "@/components/TagSelector"
+import WeekCalendar from '@/components/workingtime/WeekCalendar'
+import MonthCalendar from '@/components/workingtime/MonthCalendar'
+import TagSelector from "@/components/workingtime/TagSelector"
 import TagService from '@/service/TagService'
 import DayService from '@/service/DayService'
 import ProjectService from "@/service/ProjectService"
