@@ -13,8 +13,9 @@ import (
 )
 
 type adminProjectHandlers struct {
-	validator *validator.Validate
-	store     AdminProjectStore
+	validator   *validator.Validate
+	store       AdminProjectStore
+	userService UserService
 }
 
 type AdminProjectStore interface {
@@ -119,6 +120,25 @@ func (t *adminProjectHandlers) search(writer http.ResponseWriter, request *http.
 	report, err := t.store.Search(form)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get projects", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, report)
+}
+
+func (t *adminProjectHandlers) users(writer http.ResponseWriter, request *http.Request) {
+	projectID := chi.URLParam(request, "id")
+
+	token, err := GetAuthTokenFromHeader(request)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get authentication header", ErrInternal)
+		return
+	}
+
+	report, err := t.userService.FindByProject(token, projectID)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get users", ErrInternal)
 		return
 	}
 

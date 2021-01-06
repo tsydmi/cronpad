@@ -21,7 +21,7 @@
     </v-row>
     <v-row
         v-for="tag in tags"
-        v-bind:key="tag.id"
+        :key="tag.id"
         align="center"
         justify="start"
         class="ma-1"

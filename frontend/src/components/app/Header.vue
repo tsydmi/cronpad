@@ -29,6 +29,9 @@
         <v-tab to="/projects">
           Projects
         </v-tab>
+        <v-tab to="/reports">
+          Reports
+        </v-tab>
         <v-tab to="/settings">
           <em class="fas fa-cogs"></em>
         </v-tab>

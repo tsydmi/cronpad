@@ -27,6 +27,7 @@ type RestServer struct {
 	projectHandlers      projectHandlers
 	adminProjectHandlers adminProjectHandlers
 	userHandlers         userHandlers
+	reportsHandlers      reportsHandlers
 }
 
 type uuidProvider struct {
@@ -39,17 +40,20 @@ func (p *uuidProvider) New() string {
 func CreateRestServer(database *mongo.Database, keycloakUrl string) *RestServer {
 	uuidProvider := &uuidProvider{}
 	dayStore := repository.CreateDayStore(database, uuidProvider)
+	tagStore := repository.CreateTagStore(database, uuidProvider)
 	projectStore := repository.CreateProjectStore(database, uuidProvider)
+	userService := service.CreateUserService(keycloakUrl, projectStore)
 	validator := validation.New()
 
 	return &RestServer{
 		authenticator:        CreateAuthService(keycloakUrl),
-		tagHandlers:          tagHandlers{store: repository.CreateTagStore(database, uuidProvider), validator: validator},
+		tagHandlers:          tagHandlers{store: tagStore, validator: validator},
 		dayHandlers:          dayHandlers{store: dayStore},
 		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider), validator: validator},
 		projectHandlers:      projectHandlers{store: projectStore},
-		adminProjectHandlers: adminProjectHandlers{store: projectStore, validator: validator},
-		userHandlers:         userHandlers{service: service.CreateUserService(keycloakUrl)},
+		adminProjectHandlers: adminProjectHandlers{store: projectStore, validator: validator, userService: userService},
+		userHandlers:         userHandlers{service: userService},
+		reportsHandlers:      reportsHandlers{service: service.CreateReportService(dayStore, tagStore, projectStore)},
 	}
 }
 
@@ -115,12 +119,14 @@ func (s *RestServer) routes() http.Handler {
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
 				routeAdminProject.Post("/", s.adminProjectHandlers.create)
 				routeAdminProject.Get("/", s.adminProjectHandlers.findAll)
+				routeAdminProject.Get("/{id}/users", s.adminProjectHandlers.users)
 				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
 				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
 			})
 
 			routeAdmin.Get("/users", s.userHandlers.findAll)
+			routeAdmin.Post("/reports", s.reportsHandlers.search)
 		})
 	})
 

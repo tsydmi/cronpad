@@ -7,6 +7,7 @@ import Settings from "@/pages/Settings";
 import About from "@/pages/About";
 import Page404 from "@/pages/Page404";
 import Projects from "@/pages/Projects";
+import Reports from "@/pages/Reports";
 
 const router = new VueRouter({
     mode: 'history',
@@ -14,6 +15,7 @@ const router = new VueRouter({
         {path: '/', component: Home},
         {path: '/working-time', component: WorkingTime},
         {path: '/projects', component: Projects},
+        {path: '/reports', component: Reports},
         {path: '/settings', component: Settings},
         {path: '/about', component: About},
         {path: "*", component: Page404}

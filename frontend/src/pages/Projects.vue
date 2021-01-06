@@ -32,7 +32,7 @@
                          label="USERS"
                          @change="refreshProjects">
               <template v-slot:selection="{fullName, index}">
-                <span class="mr-4" v-if="index < 2">
+                <span class="mr-2" v-if="index < 2">
                   {{ fullName }}
                 </span>
                 <span v-if="index === 2" class="grey--text caption">

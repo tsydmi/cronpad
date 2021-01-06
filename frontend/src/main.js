@@ -3,6 +3,7 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify';
 import axios from 'axios'
 import Keycloak from 'keycloak-js'
+import './sass/variables.scss'
 
 import router from "@/config/router";
 import {initAxiosInterceptors} from "@/config/axios"

@@ -14,6 +14,7 @@
       <v-list-item
           ripple
           @click="toggle"
+          v-if="users && users.length > 0"
       >
         <v-list-item-action>
           <v-icon :color="value !== undefined && value.length > 0 ? 'indigo darken-4' : ''">
@@ -26,7 +27,10 @@
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
-      <v-divider class="mt-2"></v-divider>
+      <v-divider
+          class="mt-2"
+          v-if="users && users.length > 0"
+      ></v-divider>
     </template>
 
     <template v-slot:selection="{item, index}">

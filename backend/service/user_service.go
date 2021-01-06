@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/ts-dmitry/cronpad/backend/repository"
 	"net/http"
 	"time"
 )
@@ -10,11 +11,12 @@ import (
 const allUsersPath = "/auth/admin/realms/cronpad/users?briefRepresentation=true"
 
 type UserService struct {
-	keycloakUrl string
+	keycloakUrl  string
+	projectStore *repository.ProjectStore
 }
 
-func CreateUserService(keycloakUrl string) *UserService {
-	return &UserService{keycloakUrl: keycloakUrl}
+func CreateUserService(keycloakUrl string, projectStore *repository.ProjectStore) *UserService {
+	return &UserService{keycloakUrl: keycloakUrl, projectStore: projectStore}
 }
 
 func (t *UserService) FindAll(token string) ([]User, error) {
@@ -43,6 +45,31 @@ func (t *UserService) FindAll(token string) ([]User, error) {
 	}
 
 	return convertToUser(users), nil
+}
+
+func (t *UserService) FindByProject(token string, projectID string) ([]User, error) {
+	allUsers, err := t.FindAll(token)
+	if err != nil {
+		return nil, err
+	}
+
+	project, err := t.projectStore.GetProjectWithUsersByID(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]User, 0)
+	for i := range allUsers {
+		user := allUsers[i]
+		for j := range project.Users {
+			projectUserID := project.Users[j]
+			if user.Id == projectUserID {
+				result = append(result, user)
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func convertToUser(keycloakUsers []keycloakUser) []User {

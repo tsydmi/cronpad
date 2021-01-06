@@ -12,6 +12,7 @@ type userHandlers struct {
 
 type UserService interface {
 	FindAll(authorizationHeader string) ([]service.User, error)
+	FindByProject(token string, projectID string) ([]service.User, error)
 }
 
 func (t *userHandlers) findAll(writer http.ResponseWriter, request *http.Request) {

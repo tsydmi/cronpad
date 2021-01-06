@@ -7,7 +7,7 @@
       <span class="pa-2"> Projects: </span>
       <div
           v-for="project in projects"
-          v-bind:key="project.id"
+          :key="project.id"
           class="pl-3"
       >
         <v-btn depressed outlined
@@ -207,7 +207,8 @@ export default {
       value => !!value || 'Required.',
       value => value.split(':').length <= 2 && value.split(':')[0] < 24 || 'Wrong hours',
       value => (value.split(':').length < 2 || (value.split(':').length === 2 && value.split(':')[1] < 60)) || 'Wrong minutes',
-    ]
+    ],
+    keyUpEscapeListener: null,
   }),
   methods: {
     nextWeek() {
@@ -221,8 +222,8 @@ export default {
       this.$emit('changeCalendarValue', newDate.toISOString().split('T')[0])
     },
     showEvent({nativeEvent, event}) {
-      console.log('showEvent')
-      const open = () => {
+
+      const open = () => { //FIXME refactor! Something wrong with this code
         this.selectedEvent = event
         this.selectedElement = nativeEvent.target
         setTimeout(() => {
@@ -411,14 +412,17 @@ export default {
           .then(() => this.$emit('refreshEvents', null))
     },
   },
-  created() {
-    let that = this;
-
-    document.addEventListener('keyup', function (evt) {
+  mounted() {
+    this.keyUpEscapeListener = (evt) => {
       if (evt.key === 'Escape') {
-        that.detailsModalOpen = false
+        this.detailsModalOpen = false
       }
-    });
+    }
+
+    document.addEventListener('keyup', this.keyUpEscapeListener)
+  },
+  beforeDestroy() {
+    document.removeEventListener('keyup', this.keyUpEscapeListener)
   },
 }
 </script>

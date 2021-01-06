@@ -82,11 +82,10 @@ export default {
     newTag: {},
     valid: true,
     swatches: [
-      ['#83677b', '#445a67', '#50b4d8'],
-      ['#DAAD86', '#57838d', '#96b3c2'],
-      ['#659dbd', '#f3bfb3', '#ffdad1'],
-      ['#5cbd95', '#ccadb2', '#b7eaf7'],
-      ['#beede5', '#a7d9c9', '#6e7b8f'],
+      ["#B39DDB", "#9FA8DA", "#90CAF9"],
+      ["#81D4FA", "#80DEEA", "#80CBC4"],
+      ["#A5D6A7", "#C5E1A5", "#E6EE9C"],
+      ["#FFE082", "#FFCC80", "#FFAB91"],
     ]
   }),
   methods: {

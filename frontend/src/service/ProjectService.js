@@ -10,6 +10,9 @@ export default {
     findAll() {
         return axios.get(`/admin/projects`)
     },
+    getUsers(projectID) {
+        return axios.get(`/admin/projects/${projectID}/users`)
+    },
     search(search) {
         return axios.post(`/admin/projects/search`, search)
     },

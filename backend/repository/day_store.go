@@ -52,6 +52,32 @@ func (t *DayStore) FindByDateRange(from time.Time, to time.Time, userID string) 
 	return getDayResults(cursor)
 }
 
+func (t *DayStore) Search(form DaySearchForm) ([]Day, error) {
+	filters := bson.D{}
+	if !form.From.IsZero() || !form.To.IsZero() {
+		dateFilters := bson.D{}
+		if !form.From.IsZero() {
+			dateFilters = append(dateFilters, bson.E{Key: "$gte", Value: form.From})
+		}
+		if !form.To.IsZero() {
+			dateFilters = append(dateFilters, bson.E{Key: "$lte", Value: form.To})
+		}
+
+		filters = append(filters, bson.E{Key: "date", Value: dateFilters})
+	}
+
+	if len(form.UserID) > 0 {
+		filters = append(filters, bson.E{Key: "userid", Value: form.UserID})
+	}
+
+	cursor, err := t.collection.Find(context.TODO(), filters)
+	if err != nil {
+		return nil, err
+	}
+
+	return getDayResults(cursor)
+}
+
 func (t *DayStore) Update(day Day) (Day, error) {
 	filter := bson.D{{"_id", day.ID}, {"userid", day.UserID}}
 	var replacedRecord Day
@@ -76,4 +102,10 @@ func getDayResults(cursor *mongo.Cursor) ([]Day, error) {
 	}
 
 	return results, nil
+}
+
+type DaySearchForm struct {
+	UserID string
+	From   time.Time
+	To     time.Time
 }
