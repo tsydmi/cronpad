@@ -1,17 +1,21 @@
 import Vue from 'vue'
 import App from './App.vue'
-import vuetify from './plugins/vuetify';
+import vuetify from './plugins/vuetify'
 import axios from 'axios'
 import Keycloak from 'keycloak-js'
 import './sass/variables.scss'
 
-import router from "@/config/router";
-import {initAxiosInterceptors} from "@/config/axios"
+import router from '@/config/router'
+import {initAxiosInterceptors} from '@/config/axios'
+import dayjs from 'dayjs'
 
 Vue.config.productionTip = false
 
 Vue.prototype.$http = axios
 axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL
+
+const dayjsUtcPlugin = require('dayjs/plugin/utc')
+dayjs.extend(dayjsUtcPlugin)
 
 let initOptions = {
     url: process.env.VUE_APP_KEYCLOAK_URL, realm: 'cronpad', clientId: 'vue-frontend', onLoad: 'login-required'

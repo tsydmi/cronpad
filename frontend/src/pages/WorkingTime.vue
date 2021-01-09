@@ -12,7 +12,7 @@
     </v-col>
     <v-col lg="3" md="4" sm="12" class="pl-4 pr-4">
       <v-card elevation="4">
-        <MonthCalendar :today="today" :value="value" :events="events"
+        <MonthCalendar :today="today" :value="value" :days="days"
                        @changeCalendarValue="updateValue"/>
         <TagSelector :tags="tags" :selected-tag="selectedTag"
                      @changeSelectedTag="updateSelectedTag"
@@ -25,10 +25,13 @@
 <script>
 import WeekCalendar from '@/components/workingtime/WeekCalendar'
 import MonthCalendar from '@/components/workingtime/MonthCalendar'
-import TagSelector from "@/components/workingtime/TagSelector"
+import TagSelector from '@/components/workingtime/TagSelector'
 import TagService from '@/service/TagService'
 import DayService from '@/service/DayService'
-import ProjectService from "@/service/ProjectService"
+import ProjectService from '@/service/ProjectService'
+import dayjs from 'dayjs'
+
+const VALUE_FORMAT = 'YYYY-MM-DD'
 
 export default {
   name: 'WorkingTime',
@@ -48,12 +51,20 @@ export default {
     tags: [],
     projects: [],
     events: [],
+    days: [],
     selectedTag: null,
-    selectedProject: null
+    selectedProject: null,
   }),
   methods: {
     updateValue(value) {
+      const newValueMonth = dayjs(value, VALUE_FORMAT).month()
+      const prevValueMonth = dayjs(this.value, VALUE_FORMAT).month()
+
       this.value = value
+
+      if (newValueMonth !== prevValueMonth) {
+        this.refreshEvents()
+      }
     },
     updateSelectedTag(tag) {
       this.selectedTag = tag
@@ -71,25 +82,31 @@ export default {
           .then(response => this.projects = response.data);
     },
     refreshEvents() {
-      let date = new Date(this.value)
+      const date = dayjs(this.value, VALUE_FORMAT)
 
-      var firstDayOfMonth = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
-      var lastDayOfMonth = new Date(Date.UTC(date.getFullYear(), date.getMonth() + 1, 0));
+      const firstDayOfMonth = date.date(1)
+      const lastDayOfMonth = date.date(date.daysInMonth())
 
-      firstDayOfMonth.setDate(firstDayOfMonth.getDate() - this.getRealDayOfWeek(firstDayOfMonth))
-      lastDayOfMonth.setDate(lastDayOfMonth.getDate() + (6 - this.getRealDayOfWeek(lastDayOfMonth)))
+      const from = firstDayOfMonth.day(1)
+      const to = lastDayOfMonth.day() === 0 ? lastDayOfMonth : lastDayOfMonth.day(7)
 
-      DayService.findByDayRange(firstDayOfMonth, lastDayOfMonth)
-          .then(response => this.events = this.convertToEvents(response.data));
+      DayService.findByDayRange(from, to)
+          .then(response => this.convertEvents(response.data))
     },
-    convertToEvents(days) {
-      let events = []
+    convertEvents(days) {
+      let convertedEvents = []
+      let convertedDays = []
 
       days.forEach(day => {
+            let convertedDay = {
+              date: dayjs(day.date).utc(),
+              events: [],
+            }
+
             day.events.forEach(event => {
               let tag = this.getTagById(event.tag);
 
-              events.push({
+              const convertedEvent = {
                 id: event.id,
                 name: event.name,
                 start: new Date(event.start),
@@ -98,11 +115,16 @@ export default {
                 tag: tag,
                 project: this.getProjectById(event.project),
                 color: tag ? tag.color : '#7d7d7d' // TODO replace by something global
-              })
+              }
+              convertedEvents.push(convertedEvent)
+              convertedDay.events.push(convertedEvent)
             })
+            convertedDays.push(convertedDay)
           }
       )
-      return events
+
+      this.days = convertedDays
+      this.events = convertedEvents
     },
     getTagById(tagId) {
       return this.tags.find(tag => tag.id === tagId);
@@ -115,9 +137,9 @@ export default {
     }
   },
   created() {
-    let date = new Date()
-    this.today = date.toISOString().split('T')[0]
-    this.value = date.toISOString().split('T')[0]
+    let date = dayjs()
+    this.today = date.format(VALUE_FORMAT)
+    this.value = date.format(VALUE_FORMAT)
 
     this.refreshTags()
     this.refreshProjects()

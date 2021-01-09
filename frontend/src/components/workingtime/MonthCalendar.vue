@@ -30,7 +30,7 @@
         <v-row
             class="align-end mr-1 ml-1"
         >
-          <template v-if="dayHasEvents(date)">
+          <template>
             <v-sheet
                 v-for="(event, i) in getEvents(date)"
                 :key="i"
@@ -49,6 +49,10 @@
 </template>
 
 <script>
+import dayjs from 'dayjs'
+
+const VALUE_FORMAT = 'YYYY-MM-DD'
+
 export default {
   props: {
     today: {
@@ -59,7 +63,7 @@ export default {
       type: String,
       required: true,
     },
-    events: {
+    days: {
       type: Array,
       required: true,
     },
@@ -76,40 +80,24 @@ export default {
       this.$emit('changeCalendarValue', date)
     },
     isSelectedWeek(date) {
-      let selectedDate = new Date(date);
+      let selectedDate = new Date(date)
       return selectedDate >= this.selectedWeekFirstDay && selectedDate <= this.selectedWeekLastDay
     },
     updateFirstAndLastDayOfSelection(date) {
-      let selectedDate = new Date(date)
-      this.selectedMonth = selectedDate.getMonth()
+      let selectedDate = dayjs(date, VALUE_FORMAT).utc(true)
+      this.selectedMonth = selectedDate.month()
 
-      let realWeekDay = (selectedDate.getDay() + 6) % 7
-
-      this.selectedWeekFirstDay = new Date(selectedDate.setDate(selectedDate.getDate() - realWeekDay))
-      this.selectedWeekLastDay = new Date(selectedDate.setDate(selectedDate.getDate() + 6))
+      this.selectedWeekFirstDay = selectedDate.day(1).toDate()
+      this.selectedWeekLastDay = selectedDate.day() === 0 ? selectedDate : selectedDate.day(7).toDate()
     },
     isCurrentMonth(month) {
       return this.selectedMonth === (month - 1)
     },
-    dayHasEvents(date) {
-      var start = new Date(date);
-      start.setHours(0, 0, 0, 0);
-
-      var end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-
-      // console.log('check event')
-      return this.events.some((item) => start <= item.start && end >= item.start)
-    },
     getEvents(date) {
-      var start = new Date(date);
-      start.setHours(0, 0, 0, 0);
+      const selectedDate = dayjs(date, VALUE_FORMAT).utc(true)
 
-      var end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-
-      console.log('filter events')
-      return this.events.filter((item) => start <= item.start && end >= item.start)
+      const day = this.days.find((day) => selectedDate.isSame(day.date))
+      return day ? day.events : []
     },
     getEventDurationHours(event) {
       return (event.end - event.start) / (60 * 60 * 1000.)
