@@ -90,24 +90,31 @@
       </template>
     </v-calendar>
 
-    <event-dialog v-model="detailsModalOpen"
-                  :selected-element="selectedElement" :selected-event="selectedEvent"
-                  :projects="projects" :tags="tags"
-                  @refreshEvents="$emit('refreshEvents', null)"
+    <event-details-dialog v-model="detailsModalOpen"
+                          :selected-element="selectedElement" :selected-event="selectedEvent"
+                          :projects="projects" :tags="tags"
+                          @refreshEvents="$emit('refreshEvents', null)"
+    />
+
+    <create-event-dialog v-model="createEventModalOpen"
+                         :event="selectedEvent"
+                         @refreshEvents="$emit('refreshEvents', null)"
     />
   </div>
 </template>
 
 <script>
 import EventService from '@/service/EventService'
-import EventDialog from '@/components/workingtime/EventDialog'
+import EventDetailsDialog from '@/components/workingtime/EventDetailsDialog'
+import CreateEventDialog from '@/components/workingtime/CreateEventDialog'
 import dayjs from 'dayjs'
 
 const VALUE_FORMAT = 'YYYY-MM-DD'
 
 export default {
   components: {
-    EventDialog,
+    EventDetailsDialog,
+    CreateEventDialog,
   },
 
   props: {
@@ -140,6 +147,7 @@ export default {
     selectedEvent: {},
     selectedElement: null,
     detailsModalOpen: false,
+    createEventModalOpen: false,
     keyUpEscapeListener: null,
   }),
   methods: {
@@ -235,7 +243,8 @@ export default {
       if (this.dragEvent || this.createEvent || this.extendEvent) {
         if (this.createEvent) {
           console.log('endDrag - createEvent')
-          this.saveEvent(this.createEvent)
+          this.selectedEvent = this.createEvent
+          this.createEventModalOpen = true
         }
         if (this.extendEvent) {
           this.updateEvent(this.extendEvent)

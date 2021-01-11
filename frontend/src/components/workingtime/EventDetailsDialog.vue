@@ -82,7 +82,7 @@
 import EventService from "@/service/EventService";
 
 export default {
-  name: "EventDialog",
+  name: "EventDetailsDialog",
 
   props: {
     value: {

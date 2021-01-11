@@ -11,7 +11,6 @@
             <v-text-field
                 label="NAME"
                 v-model="search.name"
-                @keydown.enter="refreshProjects"
                 @change="refreshProjects"
                 dense
             ></v-text-field>
@@ -21,7 +20,6 @@
             <v-text-field
                 label="DESCRIPTION"
                 v-model="search.description"
-                @keydown.enter="refreshProjects"
                 @change="refreshProjects"
                 dense
             ></v-text-field>

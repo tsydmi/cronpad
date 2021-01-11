@@ -41,14 +41,7 @@ keycloak.init({onLoad: initOptions.onLoad})
 
         //Token Refresh
         setInterval(() => {
-            keycloak.updateToken(70).then((refreshed) => {
-                if (refreshed) {
-                    console.log('Token refreshed' + refreshed);
-                } else {
-                    var expirationTime = Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000);
-                    console.log(`Token not refreshed, valid for ${expirationTime} seconds`);
-                }
-            }).catch(() => {
+            keycloak.updateToken(70).catch(() => {
                 console.log('Failed to refresh token');
             });
         }, 6000)
