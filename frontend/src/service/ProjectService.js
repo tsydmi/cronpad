@@ -1,20 +1,20 @@
 import axios from "axios";
 
 export default {
-    create(project) {
-        return axios.post('/admin/projects', project)
-    },
     findCurrentUserProjects() {
         return axios.get('/projects')
     },
-    findAll() {
-        return axios.get(`/admin/projects`)
+    create(project) {
+        return axios.post('/admin/projects', project)
     },
     getUsers(projectID) {
         return axios.get(`/admin/projects/${projectID}/users`)
     },
     search(search) {
-        return axios.post(`/admin/projects/search`, search)
+        return axios.post(`/admin/projects/`, search)
+    },
+    findAll() {
+        return axios.post(`/admin/projects/`, {})
     },
     getProjectDetails(project) {
         return axios.get(`/admin/projects/${project.id}`)

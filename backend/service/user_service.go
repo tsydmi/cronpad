@@ -12,11 +12,15 @@ const allUsersPath = "/auth/admin/realms/cronpad/users?briefRepresentation=true"
 
 type UserService struct {
 	keycloakUrl  string
-	projectStore *repository.ProjectStore
+	projectStore ProjectStore
 }
 
-func CreateUserService(keycloakUrl string, projectStore *repository.ProjectStore) *UserService {
+func CreateUserService(keycloakUrl string, projectStore ProjectStore) *UserService {
 	return &UserService{keycloakUrl: keycloakUrl, projectStore: projectStore}
+}
+
+type ProjectStore interface {
+	GetProjectWithUsersByID(projectID string) (repository.Project, error)
 }
 
 func (t *UserService) FindAll(token string) ([]User, error) {

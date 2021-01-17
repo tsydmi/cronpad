@@ -20,10 +20,9 @@ type adminProjectHandlers struct {
 
 type AdminProjectStore interface {
 	Create(record repository.Project) (*mongo.InsertOneResult, error)
-	FindAll() ([]repository.Project, error)
+	Search(form repository.ProjectSearchForm) ([]repository.Project, error)
 	Update(record repository.Project) (string, error)
 	Delete(projectID string) error
-	Search(form repository.ProjectSearchForm) ([]repository.Project, error)
 }
 
 func (t *adminProjectHandlers) create(writer http.ResponseWriter, request *http.Request) {
@@ -50,17 +49,6 @@ func (t *adminProjectHandlers) create(writer http.ResponseWriter, request *http.
 
 	render.Status(request, http.StatusCreated)
 	render.JSON(writer, request, R.JSON{"id": result.InsertedID})
-}
-
-func (t *adminProjectHandlers) findAll(writer http.ResponseWriter, request *http.Request) {
-	projects, err := t.store.FindAll()
-	if err != nil {
-		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get project", ErrInternal)
-		return
-	}
-
-	render.Status(request, http.StatusOK)
-	render.JSON(writer, request, projects)
 }
 
 func (t *adminProjectHandlers) update(writer http.ResponseWriter, request *http.Request) {

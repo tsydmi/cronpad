@@ -35,9 +35,22 @@ func (t *TagStore) FindAll(userID string) ([]Tag, error) {
 	return getTagResults(cursor)
 }
 
+func (t *TagStore) FindAllActive(userID string) ([]Tag, error) {
+	filter := bson.D{bson.E{Key: "userid", Value: userID}, isActive}
+	cursor, err := t.collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return getTagResults(cursor)
+}
+
 func (t *TagStore) Delete(tagID string, userID string) error {
 	filter := bson.D{{"_id", tagID}, {"userid", userID}}
-	_, err := t.collection.DeleteOne(context.TODO(), filter)
+	update := bson.D{{"$set", bson.D{{"active", false}}}}
+
+	_, err := t.collection.UpdateOne(context.TODO(), filter, update)
+
 	return err
 }
 

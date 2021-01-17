@@ -118,9 +118,8 @@ func (s *RestServer) routes() http.Handler {
 
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
 				routeAdminProject.Post("/", s.adminProjectHandlers.create)
-				routeAdminProject.Get("/", s.adminProjectHandlers.findAll)
 				routeAdminProject.Get("/{id}/users", s.adminProjectHandlers.users)
-				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
+				routeAdminProject.Post("/", s.adminProjectHandlers.search)
 				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
 			})

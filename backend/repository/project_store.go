@@ -33,16 +33,6 @@ func (t *ProjectStore) GetProjectWithUsersByID(projectID string) (Project, error
 	return project, err
 }
 
-func (t *ProjectStore) FindAll() ([]Project, error) {
-	filter := bson.D{{}}
-	cursor, err := t.collection.Find(context.TODO(), filter)
-	if err != nil {
-		return nil, err
-	}
-
-	return getProjectResults(cursor)
-}
-
 func (t *ProjectStore) FindAllProjectsByUser(userID string) ([]Project, error) {
 	filter := bson.M{"users": userID}
 	cursor, err := t.collection.Find(context.TODO(), filter)
@@ -53,8 +43,19 @@ func (t *ProjectStore) FindAllProjectsByUser(userID string) ([]Project, error) {
 	return getProjectResults(cursor)
 }
 
+func (t *ProjectStore) FindAllActiveProjectsByUser(userID string) ([]Project, error) {
+	filter := bson.D{bson.E{Key: "users", Value: userID}, isActive}
+	cursor, err := t.collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return getProjectResults(cursor)
+}
+
 func (t *ProjectStore) Search(form ProjectSearchForm) ([]Project, error) {
-	filters := bson.D{}
+	filters := bson.D{isActive}
+
 	if len(form.Name) > 0 {
 		filters = append(filters, bson.E{Key: "name", Value: likeRegex(form.Name)})
 	}
@@ -87,7 +88,9 @@ func (t *ProjectStore) Update(project Project) (string, error) {
 
 func (t *ProjectStore) Delete(projectID string) error {
 	filter := bson.D{{"_id", projectID}}
-	_, err := t.collection.DeleteOne(context.TODO(), filter)
+	update := bson.D{{"$set", bson.D{{"active", false}}}}
+
+	_, err := t.collection.UpdateOne(context.TODO(), filter, update)
 
 	return err
 }

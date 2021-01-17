@@ -18,7 +18,7 @@ type tagHandlers struct {
 
 type TagStore interface {
 	Create(tag repository.Tag) (*mongo.InsertOneResult, error)
-	FindAll(userID string) ([]repository.Tag, error)
+	FindAllActive(userID string) ([]repository.Tag, error)
 	Delete(tagID string, userID string) error
 }
 
@@ -29,7 +29,7 @@ func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request)
 		return
 	}
 
-	tags, err := t.store.FindAll(user.ID)
+	tags, err := t.store.FindAllActive(user.ID)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get tag", ErrInternal)
 		return

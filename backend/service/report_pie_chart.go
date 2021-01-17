@@ -1,7 +1,10 @@
 package service
 
-const titleForUnknown = "unknown"
+const titleForUnknown = "Unknown"
 const colorForUnknown = "#E0E0E0"
+
+const titleForEmpty = "Empty"
+const colorForEmpty = "#FFFFFF"
 
 type PieChart struct {
 	Datasets []PieChartDataSet `json:"datasets"`
@@ -22,13 +25,18 @@ func createPieChart(hoursPerTag map[string]float64, tagMap map[string]ChartSourc
 		hours := hoursPerTag[tagID]
 		data = append(data, hours)
 
-		tag, ok := tagMap[tagID]
-		if ok == false {
-			colors = append(colors, colorForUnknown)
-			labels = append(labels, titleForUnknown)
+		if len(tagID) == 0 {
+			colors = append(colors, colorForEmpty)
+			labels = append(labels, titleForEmpty)
 		} else {
-			colors = append(colors, tag.Color)
-			labels = append(labels, tag.Name)
+			tag, ok := tagMap[tagID]
+			if ok == false {
+				colors = append(colors, colorForUnknown)
+				labels = append(labels, titleForUnknown)
+			} else {
+				colors = append(colors, tag.Color)
+				labels = append(labels, tag.Name)
+			}
 		}
 	}
 
