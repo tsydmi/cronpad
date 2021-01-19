@@ -1,0 +1,7 @@
+Dockerfile
+.git
+.gitignore
+.idea
+**/node_modules
+**/dist
+README.md
