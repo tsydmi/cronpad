@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"net/http"
 	"strings"
@@ -35,13 +36,39 @@ type AuthService struct {
 	publicKey *rsa.PublicKey
 }
 
-func CreateAuthService(keycloakUrl string) *AuthService {
-	jwks, err := getCerts(keycloakUrl)
+func CreateAuthService(keycloakUrl string, timeout time.Duration) (*AuthService, error) {
+	service, err := tryToGetCerts(keycloakUrl)
 	if err != nil {
-		panic("cannot get certificate")
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+
+		timeoutExceeded := time.After(timeout)
+		for {
+			select {
+			case <-timeoutExceeded:
+				return nil, fmt.Errorf("keycloak connection failed after %s timeout", timeout)
+
+			case <-ticker.C:
+				service, err := tryToGetCerts(keycloakUrl)
+				if err == nil {
+					return service, nil
+				}
+			}
+		}
 	}
 
-	return &AuthService{publicKey: getPublicKeyFromJWK(jwks.Keys[0])}
+	return service, nil
+}
+
+func tryToGetCerts(keycloakUrl string) (*AuthService, error) {
+	jwks, err := getCerts(keycloakUrl)
+	if err == nil {
+		log.Println("[INFO] application successfully connected to keycloak server!")
+		return &AuthService{publicKey: getPublicKeyFromJWK(jwks.Keys[0])}, nil
+	}
+
+	log.Println("[INFO] attempt to connect to keycloak server")
+	return nil, err
 }
 
 func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
@@ -100,7 +127,7 @@ func getPublicKeyFromJWK(key JWK) *rsa.PublicKey {
 
 func getCerts(keycloakUrl string) (JWKS, error) {
 	client := http.Client{
-		Timeout: time.Duration(5 * time.Second),
+		Timeout: time.Duration(2 * time.Second),
 	}
 
 	request, err := http.NewRequest("GET", keycloakUrl+certInfoPath, nil)

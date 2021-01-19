@@ -37,7 +37,7 @@ func (p *uuidProvider) New() string {
 	return uuid.New().String()
 }
 
-func CreateRestServer(database *mongo.Database, keycloakUrl string) *RestServer {
+func CreateRestServer(database *mongo.Database, authenticator *AuthService, keycloakUrl string) *RestServer {
 	uuidProvider := &uuidProvider{}
 	dayStore := repository.CreateDayStore(database, uuidProvider)
 	tagStore := repository.CreateTagStore(database, uuidProvider)
@@ -46,7 +46,7 @@ func CreateRestServer(database *mongo.Database, keycloakUrl string) *RestServer 
 	validator := validation.New()
 
 	return &RestServer{
-		authenticator:        CreateAuthService(keycloakUrl),
+		authenticator:        authenticator,
 		tagHandlers:          tagHandlers{store: tagStore, validator: validator},
 		dayHandlers:          dayHandlers{store: dayStore},
 		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider), validator: validator},
@@ -119,7 +119,7 @@ func (s *RestServer) routes() http.Handler {
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
 				routeAdminProject.Post("/", s.adminProjectHandlers.create)
 				routeAdminProject.Get("/{id}/users", s.adminProjectHandlers.users)
-				routeAdminProject.Post("/", s.adminProjectHandlers.search)
+				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
 				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
 			})

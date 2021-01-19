@@ -14,15 +14,7 @@ type mongoConfig struct {
 	password string
 }
 
-func createMongoClient() (*mongo.Client, mongoConfig, error) {
-	config := mongoConfig{
-		host:     getEnv("MONGO_HOST", "localhost"),
-		port:     getEnv("MONGO_PORT", "27017"),
-		db:       getEnv("MONGO_DB", "cronpad"),
-		username: getEnv("MONGO_USER", "user"),
-		password: getEnv("MONGO_PASSWORD", "pwd"),
-	}
-
+func createMongoClient(config mongoConfig) (*mongo.Client, error) {
 	credential := options.Credential{
 		AuthSource: config.db,
 		Username:   config.username,
@@ -32,7 +24,7 @@ func createMongoClient() (*mongo.Client, mongoConfig, error) {
 	clientOptions := options.Client().ApplyURI("mongodb://" + config.host + ":" + config.port).SetAuth(credential)
 
 	client, err := mongo.NewClient(clientOptions)
-	return client, config, err
+	return client, err
 }
 
 func getEnv(key, fallback string) string {

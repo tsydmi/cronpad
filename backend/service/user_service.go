@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ts-dmitry/cronpad/backend/repository"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -41,11 +42,20 @@ func (t *UserService) FindAll(token string) ([]User, error) {
 		return nil, err
 	}
 
+	if response.StatusCode != 200 {
+		bodyBytes, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, fmt.Errorf("keycloak response status: %v", response.Status)
+		}
+
+		return nil, fmt.Errorf("keycloak response: [%v] %v", response.Status, string(bodyBytes))
+	}
+
 	defer response.Body.Close()
 
 	users := make([]keycloakUser, 0)
 	if err := json.NewDecoder(response.Body).Decode(&users); err != nil {
-		return nil, fmt.Errorf("unable to read key %s", err)
+		return nil, err
 	}
 
 	return convertToUser(users), nil
