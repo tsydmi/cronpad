@@ -11,40 +11,47 @@ import dayjs from 'dayjs'
 
 Vue.config.productionTip = false
 
-Vue.prototype.$http = axios
-axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL
-
 const dayjsUtcPlugin = require('dayjs/plugin/utc')
 dayjs.extend(dayjsUtcPlugin)
 
-let initOptions = {
-    url: process.env.VUE_APP_KEYCLOAK_URL, realm: 'cronpad', clientId: 'vue-frontend', onLoad: 'login-required'
+const getEnvironmentConfig = async () => {
+    const config = await fetch('/environment.json')
+    return await config.json()
 }
 
-let keycloak = Keycloak(initOptions);
+getEnvironmentConfig().then(function (envJson){
+    Vue.prototype.$http = axios
+    axios.defaults.baseURL = envJson.VUE_APP_BACKEND_URL
 
-keycloak.init({onLoad: initOptions.onLoad})
-    .then((auth) => {
-        if (!auth) {
-            window.location.reload();
-        } else {
-            console.log("Authenticated");
-            initAxiosInterceptors(keycloak)
+    let initOptions = {
+        url: envJson.VUE_APP_KEYCLOAK_URL, realm: 'cronpad', clientId: 'vue-frontend', onLoad: 'login-required'
+    }
 
-            new Vue({
-                el: '#app',
-                vuetify,
-                router,
-                render: h => h(App, {props: {keycloak: keycloak}})
-            })
-        }
+    let keycloak = Keycloak(initOptions);
 
-        //Token Refresh
-        setInterval(() => {
-            keycloak.updateToken(70).catch(() => {
-                console.log('Failed to refresh token');
-            });
-        }, 6000)
-    }).catch(() => {
-    console.log("Authenticated Failed");
+    keycloak.init({onLoad: initOptions.onLoad})
+        .then((auth) => {
+            if (!auth) {
+                window.location.reload();
+            } else {
+                console.log("Authenticated");
+                initAxiosInterceptors(keycloak)
+
+                new Vue({
+                    el: '#app',
+                    vuetify,
+                    router,
+                    render: h => h(App, {props: {keycloak: keycloak}})
+                })
+            }
+
+            //Token Refresh
+            setInterval(() => {
+                keycloak.updateToken(70).catch(() => {
+                    console.log('Failed to refresh token');
+                });
+            }, 6000)
+        }).catch(() => {
+        console.log("Authenticated Failed");
+    })
 })
