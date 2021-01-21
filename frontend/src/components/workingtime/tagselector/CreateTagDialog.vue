@@ -102,7 +102,9 @@ export default {
   },
   watch: {
     'value': function () {
-      this.newTag = {}
+      this.newTag = {
+        color: this.swatches[0][0],
+      }
     }
   }
 }
