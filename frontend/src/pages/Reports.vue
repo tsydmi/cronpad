@@ -12,7 +12,7 @@
           <v-form :disabled="selectedUser === null" class="row">
             <v-spacer/>
             <v-col cols="4">
-              <date-range-picker v-model="dateRange" @change="refreshReports"/>
+              <date-range-picker v-model="dateRange" @change="changeDate"/>
             </v-col>
           </v-form>
 
@@ -58,6 +58,8 @@ import DateRangeBarChart from "@/components/reports/DateRangeBarChart"
 import DateRangePicker from "@/components/DateRangePicker"
 import dayjs from 'dayjs'
 
+const DATE_FORMAT = 'YYYY-MM-DD'
+
 export default {
   name: "Reports",
 
@@ -69,7 +71,7 @@ export default {
   },
 
   data: () => ({
-    dateRange: [dayjs().date(1).format('YYYY-MM-DD'), dayjs().format('YYYY-MM-DD')],
+    dateRange: [dayjs().date(1).format(DATE_FORMAT), dayjs().format(DATE_FORMAT)],
     selectedUser: null,
 
     hoursSum: 0,
@@ -92,6 +94,18 @@ export default {
 
       this.refreshReports()
     },
+    changeDate() {
+      if(this.dateRange.length === 2) {
+        let first = dayjs(this.dateRange[0], DATE_FORMAT)
+        let second = dayjs(this.dateRange[1], DATE_FORMAT)
+
+        if (first.isAfter(second)) {
+          this.dateRange = [second.format(DATE_FORMAT), first.format(DATE_FORMAT)]
+        }
+      }
+
+      this.refreshReports()
+    },
     refreshReports() {
       let search = {}
 
@@ -100,12 +114,12 @@ export default {
 
         if (this.dateRange) {
           if (this.dateRange.length > 0) {
-            search.from = dayjs(this.dateRange[0], 'YYYY-MM-DD')
+            search.from = dayjs(this.dateRange[0], DATE_FORMAT)
                 .hour(0).minute(0).second(0)
                 .toISOString()
 
             if (this.dateRange.length === 2) {
-              search.to = dayjs(this.dateRange[1], 'YYYY-MM-DD')
+              search.to = dayjs(this.dateRange[1], DATE_FORMAT)
                   .hour(23).minute(59).second(59)
                   .toISOString()
             }
