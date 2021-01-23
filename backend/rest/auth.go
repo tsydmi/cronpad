@@ -32,6 +32,8 @@ type JWK struct {
 	X5t string
 }
 
+const adminRole = "user-manager"
+
 type AuthService struct {
 	publicKey *rsa.PublicKey
 }
@@ -79,7 +81,7 @@ func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		err = a.verifyToken(token)
+		err = verifySignature(token, a.publicKey)
 		if err != nil {
 			SendAuthorizationErrorJSON(w, r, err)
 			return
@@ -88,14 +90,29 @@ func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (a *AuthService) verifyToken(token string) error {
-	return verifySignature(token, a.publicKey)
+func (a *AuthService) HasRole(role string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			token, err := GetAuthTokenFromHeader(r)
+			if err != nil {
+				SendAuthorizationErrorJSON(w, r, err)
+				return
+			}
+
+			userInfo, err := getUserInfoFromToken(token)
+			if err != nil || !userInfo.hasRole(role) {
+				SendAuthorizationErrorJSON(w, r, err)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
 }
 
 func verifySignature(jwtToken string, publicKey *rsa.PublicKey) error {
 	parts := strings.Split(jwtToken, ".")
 	if len(parts) != 3 {
-		errors.New("wrong jwt token")
+		return errors.New("wrong jwt token")
 	}
 
 	message := []byte(strings.Join(parts[0:2], "."))

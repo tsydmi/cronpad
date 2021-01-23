@@ -113,7 +113,7 @@ func (s *RestServer) routes() http.Handler {
 
 		// Admin
 		r.Route("/admin", func(routeAdmin chi.Router) {
-			// TODO add authentication middleware to allow admin roles only
+			routeAdmin.Use(s.authenticator.HasRole(adminRole))
 
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
 				routeAdminProject.Post("/", s.adminProjectHandlers.create)

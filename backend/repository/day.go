@@ -12,13 +12,13 @@ type Day struct {
 	UserID string    `json:"user,omitempty"`
 }
 
-func (t *Day) PrepareReceived() {
-	t.ID = ""
-	t.UserID = ""
+func (d *Day) PrepareReceived() {
+	d.ID = ""
+	d.UserID = ""
 }
 
-func (t *Day) PrepareToSend() {
-	t.UserID = ""
+func (d *Day) PrepareToSend() {
+	d.UserID = ""
 }
 
 type Event struct {
@@ -31,23 +31,23 @@ type Event struct {
 	Timed     bool      `json:"timed" validate:"required"`
 }
 
-func (t *Event) PrepareReceived() {
-	t.ID = ""
+func (e *Event) PrepareReceived() {
+	e.ID = ""
 }
 
-func (t *Event) PrepareToSend() {
+func (e *Event) PrepareToSend() {
 	// Event doesn't have anything to clean before sending
 }
 
-func (t *Event) Copy() Event {
+func (e *Event) Copy() Event {
 	return Event{
-		ID:        t.ID,
-		Name:      t.Name,
-		Start:     t.Start,
-		End:       t.End,
-		TagID:     t.TagID,
-		ProjectID: t.ProjectID,
-		Timed:     t.Timed,
+		ID:        e.ID,
+		Name:      e.Name,
+		Start:     e.Start,
+		End:       e.End,
+		TagID:     e.TagID,
+		ProjectID: e.ProjectID,
+		Timed:     e.Timed,
 	}
 }
 

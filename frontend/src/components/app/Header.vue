@@ -26,10 +26,10 @@
         <v-tab to="/working-time">
           Working time
         </v-tab>
-        <v-tab to="/projects">
+        <v-tab to="/projects" v-if="hasAdminRole">
           Projects
         </v-tab>
-        <v-tab to="/reports">
+        <v-tab to="/reports" v-if="hasAdminRole">
           Reports
         </v-tab>
         <v-tab to="/settings">
@@ -86,6 +86,8 @@
 </template>
 
 <script>
+const ADMIN_ROLE = 'user-manager'
+
 export default {
   props: {
     keycloak: {
@@ -99,6 +101,7 @@ export default {
       fullName: '',
       email: '',
     },
+    hasAdminRole: false,
   }),
   methods: {
     getInitials(fullName) {
@@ -122,6 +125,8 @@ export default {
           this.user.initials = this.getInitials(this.keycloak.userInfo.name)
           this.user.fullName = this.keycloak.userInfo.name
           this.user.email = this.keycloak.userInfo.email
+
+          this.hasAdminRole = this.keycloak.hasRealmRole(ADMIN_ROLE)
         })
   }
 }

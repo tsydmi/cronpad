@@ -6,12 +6,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ts-dmitry/cronpad/backend/utils"
 	"net/http"
 	"strings"
 )
 
 type UserInfo struct {
-	ID string
+	ID    string
+	Roles []string
+}
+
+func (u UserInfo) hasRole(role string) bool {
+	return utils.Contains(u.Roles, role)
 }
 
 func GetUserInfo(request *http.Request) (UserInfo, error) {
@@ -56,38 +62,38 @@ func getUserInfoFromToken(token string) (UserInfo, error) {
 		return UserInfo{}, fmt.Errorf("unable to read key %s", err)
 	}
 
-	return UserInfo{ID: payload.Sub}, nil
+	return UserInfo{ID: payload.Sub, Roles: payload.RealmAccess.Roles}, nil
 }
 
 type payload struct {
-	Exp      int    `json:"exp"`
-	Iat      int    `json:"iat"`
-	AuthTime int    `json:"auth_time"`
-	Jti      string `json:"jti"`
-	Iss      string `json:"iss"`
-	//Aud            string   `json:"aud"`
-	Sub            string   `json:"sub"`
-	Typ            string   `json:"typ"`
-	Azp            string   `json:"azp"`
-	Nonce          string   `json:"nonce"`
-	SessionState   string   `json:"session_state"`
-	Acr            string   `json:"acr"`
-	AllowedOrigins []string `json:"allowed-origins"`
-	//RealmAccess       []string `json:"realm_access"`
-	//ResourceAccess    []string `json:"resource_access"`
-	Scope             string `json:"scope"`
-	EmailVerified     bool   `json:"email_verified"`
-	Name              string `json:"name"`
-	PreferredUsername string `json:"preferred_username"`
-	GivenName         string `json:"given_name"`
-	FamilyName        string `json:"family_name"`
-	Mail              string `json:"email"`
+	Exp               int         `json:"exp"`
+	Iat               int         `json:"iat"`
+	AuthTime          int         `json:"auth_time"`
+	Jti               string      `json:"jti"`
+	Iss               string      `json:"iss"`
+	Sub               string      `json:"sub"`
+	Typ               string      `json:"typ"`
+	Azp               string      `json:"azp"`
+	Nonce             string      `json:"nonce"`
+	SessionState      string      `json:"session_state"`
+	Acr               string      `json:"acr"`
+	AllowedOrigins    []string    `json:"allowed-origins"`
+	RealmAccess       RealmAccess `json:"realm_access"`
+	Scope             string      `json:"scope"`
+	EmailVerified     bool        `json:"email_verified"`
+	Name              string      `json:"name"`
+	PreferredUsername string      `json:"preferred_username"`
+	GivenName         string      `json:"given_name"`
+	FamilyName        string      `json:"family_name"`
+	Mail              string      `json:"email"`
+	//Aud               string      `json:"aud"`
+	//ResourceAccess    []string    `json:"resource_access"`
 }
 
-//type RealmAccess struct {
-//	Roles []string `json:"roles"`
-//}
-//
+type RealmAccess struct {
+	Roles []string `json:"roles"`
+}
+
 //type ResourceAccess struct {
 //	Roles []string `json:"roles"`
 //}

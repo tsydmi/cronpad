@@ -169,6 +169,10 @@ export default {
       this.editProjectDialog = true
     },
     getAllUserNames(project) {
+      if (!project.users) {
+        return ''
+      }
+      
       return project.users
           .map(u => this.getFullNameById(u))
           .join(', ')
