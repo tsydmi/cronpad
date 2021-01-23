@@ -64,6 +64,13 @@
           />
         </v-card-text>
       </v-form>
+
+      <div class="d-flex justify-center">
+        <div class="pl-3 pr-3 global-form-error error--text">
+          {{ globalFormError }}
+        </div>
+      </div>
+
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
@@ -79,7 +86,7 @@
 
 <script>
 
-import EventService from "@/service/EventService";
+import EventService from "@/service/EventService"
 
 export default {
   name: "EventDetailsDialog",
@@ -108,6 +115,7 @@ export default {
   },
   data: () => ({
     selectedEventValid: true,
+    globalFormError: '',
     timeRules: [
       value => !!value || 'Required.',
       value => value.split(':').length <= 2 && value.split(':')[0] < 24 || 'Wrong hours',
@@ -148,7 +156,14 @@ export default {
     },
     updateEvent(event) {
       EventService.update(event)
-          .then(() => this.$emit('refreshEvents', null))
+          .then(() => {
+            this.$emit('refreshEvents', null)
+          })
+          .catch(error => {
+            if (error && error.response && (error.response.status === 400 || error.response.status === 404)) {
+              this.globalFormError = error.response.data.error
+            }
+          })
     },
     deleteEvent(event) {
       this.emitChange(false)
@@ -160,5 +175,18 @@ export default {
       this.$emit('input', value)
     },
   },
+  watch: {
+    'value': function () {
+      this.globalFormError = null
+    },
+  },
 }
 </script>
+
+<style scoped>
+.global-form-error {
+  width: 350px;
+  text-align: center;
+  white-space: pre-line;
+}
+</style>

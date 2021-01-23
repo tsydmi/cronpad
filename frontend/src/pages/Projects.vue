@@ -127,6 +127,7 @@ import ProjectService from "@/service/ProjectService"
 import UserService from "@/service/UserService"
 import UserSelect from "@/components/UserSelect"
 import DeleteDialog from "@/components/DeleteDialog"
+import cloneDeep from 'clone-deep'
 
 export default {
   name: "Projects",
@@ -164,12 +165,7 @@ export default {
       this.refreshProjects()
     },
     selectProject(project) {
-      this.projectToEdit = {
-        id: project.id,
-        name: project.name,
-        description: project.description,
-        users: project.users,
-      }
+      this.projectToEdit = cloneDeep(project)
       this.editProjectDialog = true
     },
     getAllUserNames(project) {

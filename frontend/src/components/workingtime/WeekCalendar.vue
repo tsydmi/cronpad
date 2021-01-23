@@ -108,6 +108,7 @@ import EventService from '@/service/EventService'
 import EventDetailsDialog from '@/components/workingtime/EventDetailsDialog'
 import CreateEventDialog from '@/components/workingtime/CreateEventDialog'
 import dayjs from 'dayjs'
+import cloneDeep from 'clone-deep'
 
 const VALUE_FORMAT = 'YYYY-MM-DD'
 
@@ -160,7 +161,7 @@ export default {
     showEvent({nativeEvent, event}) {
 
       const open = () => { //FIXME refactor! Something wrong with this code
-        this.selectedEvent = event
+        this.selectedEvent = cloneDeep(event)
         this.selectedElement = nativeEvent.target
         setTimeout(() => {
           this.detailsModalOpen = true
@@ -177,23 +178,19 @@ export default {
       nativeEvent.stopPropagation()
     },
     startDrag({event, timed}) {
-      console.log('startDrag')
       if (event && timed) {
         this.dragEvent = event
       }
     },
     startTime(tms) {
-      console.log('startTime')
       const mouse = this.toTime(tms)
 
       if (this.detailsModalOpen) {
-        console.log('event selected')
         this.detailsModalOpen = false
         return
       }
 
       if (!this.selectedTag) {
-        console.log('tag not selected')
         return
       }
 
@@ -214,7 +211,6 @@ export default {
       }
     },
     extendBottom(event) {
-      console.log('extendBottom')
       this.extendEvent = event
     },
     mouseMove(tms) {
@@ -239,10 +235,8 @@ export default {
       }
     },
     endDrag() {
-      console.log('endDrag')
       if (this.dragEvent || this.createEvent || this.extendEvent) {
         if (this.createEvent) {
-          console.log('endDrag - createEvent')
           this.selectedEvent = this.createEvent
           this.createEventModalOpen = true
         }
@@ -256,7 +250,6 @@ export default {
       }
     },
     cancelDrag() {
-      console.log('cancel drug')
       if (this.dragEvent || this.extendEvent || this.createEvent) {
         this.$emit('refreshEvents', null)
       }
@@ -308,7 +301,23 @@ export default {
           .then(() => this.$emit('refreshEvents', null))
     },
     updateEvent(event) {
-      EventService.update(event)
+      let e = cloneDeep(event);
+
+      let start = dayjs(e.start)
+      let end = dayjs(e.end)
+
+      if (!end.isAfter(start)) {
+        end = start.add(15, 'minute')
+      }
+
+      if (start.day() !== end.day() || start.month() !== end.month() || start.day() !== start.day()) {
+        end = start.endOf('day')
+      }
+
+      e.start = start.toISOString()
+      e.end = end.toISOString()
+
+      EventService.update(e)
           .then(() => this.$emit('refreshEvents', null))
     },
   },

@@ -14,3 +14,7 @@ func (t *Project) PrepareReceived() {
 func (t *Project) PrepareToSend() {
 	t.Users = nil
 }
+
+func (t *Project) IsValid() []error {
+	return nil
+}

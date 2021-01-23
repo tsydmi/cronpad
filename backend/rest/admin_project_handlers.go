@@ -6,14 +6,13 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
-	"github.com/go-playground/validator/v10"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type adminProjectHandlers struct {
-	validator   *validator.Validate
+	validator   *FormValidator
 	store       AdminProjectStore
 	userService UserService
 }
@@ -33,7 +32,7 @@ func (t *adminProjectHandlers) create(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	err = t.validator.Struct(project)
+	err = t.validator.validate(&project)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return
@@ -65,7 +64,7 @@ func (t *adminProjectHandlers) update(writer http.ResponseWriter, request *http.
 		return
 	}
 
-	err = t.validator.Struct(project)
+	err = t.validator.validate(&project)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return

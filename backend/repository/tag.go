@@ -16,3 +16,7 @@ func (t *Tag) PrepareReceived() {
 func (t *Tag) PrepareToSend() {
 	t.UserID = ""
 }
+
+func (t *Tag) IsValid() []error {
+	return nil
+}

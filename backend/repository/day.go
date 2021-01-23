@@ -1,6 +1,9 @@
 package repository
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Day struct {
 	ID     string    `json:"id,omitempty" bson:"_id"`
@@ -46,4 +49,19 @@ func (t *Event) Copy() Event {
 		ProjectID: t.ProjectID,
 		Timed:     t.Timed,
 	}
+}
+
+func (e *Event) IsValid() []error {
+	var errs []error
+
+	if !e.Start.IsZero() && !e.End.IsZero() {
+		if e.Start.After(e.End) {
+			errs = append(errs, errors.New("wrong date rage"))
+		}
+		if e.Start.Day() != e.End.Day() || e.Start.Month() != e.End.Month() || e.Start.Year() != e.End.Year() {
+			errs = append(errs, errors.New("event cannot last more than one day"))
+		}
+	}
+
+	return errs
 }

@@ -6,13 +6,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
-	"github.com/go-playground/validator/v10"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"net/http"
 )
 
 type eventHandlers struct {
-	validator *validator.Validate
+	validator *FormValidator
 	service   EventService
 }
 
@@ -36,7 +35,7 @@ func (t *eventHandlers) create(writer http.ResponseWriter, request *http.Request
 		return
 	}
 
-	err = t.validator.Struct(event)
+	err = t.validator.validate(&event)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return
@@ -74,7 +73,7 @@ func (t *eventHandlers) update(writer http.ResponseWriter, request *http.Request
 		return
 	}
 
-	err = t.validator.Struct(event)
+	err = t.validator.validate(&event)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return

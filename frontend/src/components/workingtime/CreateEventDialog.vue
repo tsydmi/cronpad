@@ -50,6 +50,7 @@
 
 <script>
 import EventService from '@/service/EventService'
+import dayjs from "dayjs"
 
 export default {
   name: "DeleteDialog",
@@ -77,10 +78,21 @@ export default {
     saveEvent() {
       if (this.$refs.form.validate()) {
 
+        let start = dayjs(this.event.start)
+        let end = dayjs(this.event.end)
+
+        if (!end.isAfter(start)) {
+          end = start.add(15, 'minute')
+        }
+
+        if (start.day() !== end.day() || start.month() !== end.month() || start.day() !== start.day()) {
+          end = start.endOf('day')
+        }
+
         const event = {
           name: this.name,
-          start: this.event.start,
-          end: this.event.end,
+          start: start.toISOString(),
+          end: end.toISOString(),
           tag: this.event.tag,
           project: this.event.project,
           timed: this.event.timed,
@@ -99,7 +111,9 @@ export default {
   },
   watch: {
     'value': function () {
-      this.$refs.form.reset()
+      if (this.value === false) {
+        this.$refs.form.reset()
+      }
     }
   },
 }

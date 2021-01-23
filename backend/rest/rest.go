@@ -7,7 +7,6 @@ import (
 	"github.com/go-chi/cors"
 	log "github.com/go-pkgz/lgr"
 	R "github.com/go-pkgz/rest"
-	validation "github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"github.com/ts-dmitry/cronpad/backend/service"
@@ -43,7 +42,7 @@ func CreateRestServer(database *mongo.Database, authenticator *AuthService, keyc
 	tagStore := repository.CreateTagStore(database, uuidProvider)
 	projectStore := repository.CreateProjectStore(database, uuidProvider)
 	userService := service.CreateUserService(keycloakUrl, projectStore)
-	validator := validation.New()
+	validator := CreateValidator()
 
 	return &RestServer{
 		authenticator:        authenticator,
