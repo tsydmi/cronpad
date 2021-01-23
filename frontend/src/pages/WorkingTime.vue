@@ -143,7 +143,9 @@ export default {
 
     this.refreshTags()
     this.refreshProjects()
+  },
+  mounted() {
     this.refreshEvents()
-  }
+  },
 };
 </script>
