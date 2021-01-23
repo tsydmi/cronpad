@@ -23,11 +23,11 @@ func (d *Day) PrepareToSend() {
 
 type Event struct {
 	ID        string    `json:"id,omitempty" bson:"_id"`
-	Name      string    `json:"name" validate:"required"`
+	Name      string    `json:"name" validate:"required,max=256"`
 	Start     time.Time `json:"start" validate:"required"`
 	End       time.Time `json:"end" validate:"required"`
-	TagID     string    `json:"tag" validate:"required"`
-	ProjectID string    `json:"project"`
+	TagID     string    `json:"tag" validate:"required,max=36"`
+	ProjectID string    `json:"project" validate:"max=36"`
 	Timed     bool      `json:"timed" validate:"required"`
 }
 
