@@ -5,104 +5,58 @@
         min-height="400px"
         class="pa-10"
     >
-      <v-form>
-        <v-row class="mb-3">
-          <v-col cols="2">
-            <v-text-field
-                label="NAME"
-                v-model="search.name"
-                @change="refreshProjects"
-                dense
-            ></v-text-field>
-          </v-col>
-
-          <v-col cols="3">
-            <v-text-field
-                label="DESCRIPTION"
-                v-model="search.description"
-                @change="refreshProjects"
-                dense
-            ></v-text-field>
-          </v-col>
-
-          <v-col cols="5">
-            <user-select v-model="search.users" :users="users"
-                         label="USERS"
-                         @change="refreshProjects">
-              <template v-slot:selection="{fullName, index}">
-                <span class="mr-2" v-if="index < 2">
-                  {{ fullName }}
-                </span>
-                <span v-if="index === 2" class="grey--text caption">
-                  (+{{ search.users.length - 2 }} others)
-                </span>
-              </template>
-            </user-select>
-          </v-col>
-
-          <v-col cols="1">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                    icon
-                    @click="clearFilters"
-                    v-bind="attrs"
-                    v-on="on"
-                    :disabled="!search.name && !search.description && (!search.users || search.users.length === 0)"
-                >
-                  <v-icon>far fa-times-circle</v-icon>
-                </v-btn>
-              </template>
-              <span>Clear filters</span>
-            </v-tooltip>
-          </v-col>
-
-          <v-col cols="1" class="d-flex justify-end">
-            <v-tooltip right>
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn
-                    icon
-                    class="primary--text"
-                    @click="createProjectDialog = true"
-                    v-bind="attrs"
-                    v-on="on"
-                >
-                  <v-icon>mdi-plus-circle</v-icon>
-                </v-btn>
-              </template>
-              <span>ADD PROJECT</span>
-            </v-tooltip>
-          </v-col>
-        </v-row>
-      </v-form>
+      <v-col class="d-flex justify-end">
+        <v-tooltip right>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+                icon
+                class="primary--text"
+                @click="createProjectDialog = true"
+                v-bind="attrs"
+                v-on="on"
+            >
+              <v-icon>mdi-plus-circle</v-icon>
+            </v-btn>
+          </template>
+          <span>ADD PROJECT</span>
+        </v-tooltip>
+      </v-col>
 
       <span v-if="!projects || projects.length === 0" class="inactive--text mt-10 justify-center d-flex">
         No projects found
       </span>
 
-      <v-row
-          v-for="project in projects"
-          :key="project.id">
-        <v-col cols="2">{{ project.name }}</v-col>
-        <v-col cols="3">{{ project.description }}</v-col>
-        <v-col cols="5">
-          <span>{{ getAllUserNames(project) }}</span>
-        </v-col>
-        <v-col cols="2" class="d-flex justify-end">
-          <v-btn
-              icon
-              @click="selectProject(project)"
-          >
-            <v-icon>mdi-pencil-outline</v-icon>
-          </v-btn>
-          <v-btn
-              icon
-              @click="openDeleteProjectDialog(project)"
-          >
-            <v-icon>mdi-trash-can-outline</v-icon>
-          </v-btn>
-        </v-col>
-      </v-row>
+      <v-data-table
+          :headers="projectsHeaders"
+          :items="projects"
+          hide-default-footer
+      >
+        <template v-slot:item.color="{ item }">
+          <v-icon v-bind:color="item.color">mdi-format-color-highlight</v-icon>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+          <div class="d-flex justify-end">
+            <v-btn
+                icon
+                @click="selectProject(item)"
+            >
+              <v-icon>mdi-pencil-outline</v-icon>
+            </v-btn>
+            <v-btn
+                icon
+                @click="openDeleteProjectDialog(item)"
+            >
+              <v-icon>mdi-trash-can-outline</v-icon>
+            </v-btn>
+          </div>
+        </template>
+
+        <template v-slot:item.users="{ item }">
+          <span> {{ getAllUserNames(item) }}</span>
+        </template>
+
+      </v-data-table>
 
       <create-project-dialog v-model="createProjectDialog"
                              :users="users"
@@ -125,7 +79,6 @@ import CreateProjectDialog from "@/components/projects/CreateProjectDialog"
 import EditProjectDialog from "@/components/projects/EditProjectDialog"
 import ProjectService from "@/service/ProjectService"
 import UserService from "@/service/UserService"
-import UserSelect from "@/components/UserSelect"
 import DeleteDialog from "@/components/DeleteDialog"
 import cloneDeep from 'clone-deep'
 
@@ -134,7 +87,6 @@ export default {
   components: {
     CreateProjectDialog,
     EditProjectDialog,
-    UserSelect,
     DeleteDialog,
   },
 
@@ -148,6 +100,12 @@ export default {
     projectToDelete: {},
 
     projects: [],
+    projectsHeaders: [
+      {text: 'NAME', value: 'name'},
+      {text: 'DESCRIPTION', value: 'description'},
+      {text: 'USERS', value: 'users', sortable: false},
+      {text: '', value: 'actions', sortable: false},
+    ],
     users: [],
     search: {},
   }),
