@@ -10,34 +10,24 @@
       </v-card-title>
       <v-card-text>
         <v-container>
-          <v-form v-model="valid">
+          <v-form ref="form" v-model="valid">
             <v-row>
               <v-text-field
                   label="Name"
                   v-model="newTag.name"
                   @keydown.enter="saveTag"
-                  required
+                  :rules="rules.name"
               ></v-text-field>
             </v-row>
             <v-row>
-              <v-select
-                  label="Parent"
-                  hint="new tag can extend existed one"
-                  v-model="newTag.parent"
-                  item-text="name"
-                  :items="tags"
-              ></v-select>
+              <v-text-field
+                  label="Description"
+                  v-model="newTag.description"
+                  @keydown.enter="saveTag"
+              ></v-text-field>
             </v-row>
             <v-row>
-              <span class="v-label v-text-field mr-3">Color</span>
-              <v-color-picker
-                  label="Color"
-                  hide-canvas
-                  show-swatches
-                  :swatches="swatches"
-                  swatches-max-height="400px"
-                  v-model="newTag.color"
-              ></v-color-picker>
+              <tag-color-picker v-model="newTag.color"/>
             </v-row>
           </v-form>
         </v-container>
@@ -64,37 +54,39 @@
 </template>
 
 <script>
-import TagService from "@/service/TagService";
+import TagService from "@/service/TagService"
+import TagColorPicker from "@/components/tags/TagColorPicker"
 
 export default {
   name: "CreateTagDialog",
+  components: {
+    TagColorPicker,
+  },
+
   props: {
     value: {
       type: Boolean,
       required: false,
     },
-    tags: {
-      type: Array,
-      required: true,
-    },
   },
   data: () => ({
-    newTag: {},
     valid: true,
-    swatches: [
-      ["#B39DDB", "#9FA8DA", "#90CAF9"],
-      ["#81D4FA", "#80DEEA", "#80CBC4"],
-      ["#A5D6A7", "#C5E1A5", "#E6EE9C"],
-      ["#FFE082", "#FFCC80", "#FFAB91"],
-    ]
+    newTag: {},
+    rules: {
+      name: [
+        v => !!v || 'Name is required',
+      ],
+    },
   }),
   methods: {
     saveTag() {
-      TagService.create(this.newTag)
-          .then(() => {
-            this.$emit('refreshTags', null)
-            this.emitChange(false)
-          })
+      if (this.$refs.form.validate()) {
+        TagService.create(this.newTag)
+            .then(() => {
+              this.$emit('refreshTags', null)
+              this.emitChange(false)
+            })
+      }
     },
     emitChange(value) {
       this.$emit('input', value)
@@ -102,10 +94,10 @@ export default {
   },
   watch: {
     'value': function () {
-      this.newTag = {
-        color: this.swatches[0][0],
+      if (this.value === false) {
+        this.$refs.form.reset()
       }
-    }
-  }
+    },
+  },
 }
 </script>

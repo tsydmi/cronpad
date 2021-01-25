@@ -2,18 +2,22 @@ import axios from "axios";
 
 export default {
     create(tag) {
-        let body = {
-            name: tag.name,
-            parent: tag.parent,
-            color: tag.color.hex,
-        }
-
-        return axios.post('/tags', body)
+        return axios.post('/admin/tags', this.convertToBody(tag))
     },
     findAll() {
         return axios.get('/tags')
     },
-    delete(tag) {
-        return axios.delete(`/tags/${tag.id}`)
+    update(tag) {
+        return axios.put(`/admin/tags/${tag.id}`, this.convertToBody(tag))
     },
+    delete(tag) {
+        return axios.delete(`/admin/tags/${tag.id}`)
+    },
+    convertToBody(tag) {
+        return {
+            name: tag.name,
+            description: tag.description,
+            color: tag.color.hex ? tag.color.hex : tag.color,
+        }
+    }
 }

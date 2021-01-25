@@ -1,24 +1,5 @@
 <template>
-  <div class="pr-5 pl-5 pt-3 pb-3">
-    <v-row
-        class="pb-1"
-    >
-      <v-btn
-          icon
-          @click="openCreateTagDialog = true"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
-
-      <v-spacer></v-spacer>
-
-      <v-btn
-          icon
-          @click="openConfigureTagDialog = true"
-      >
-        <v-icon>mdi-cog-outline</v-icon>
-      </v-btn>
-    </v-row>
+  <div class="pa-5">
     <v-row
         v-for="tag in tags"
         :key="tag.id"
@@ -35,27 +16,12 @@
       <v-spacer></v-spacer>
       <v-icon v-bind:color="tag.color">mdi-format-color-highlight</v-icon>
     </v-row>
-
-    <create-tag-dialog v-model="openCreateTagDialog"
-                       :tags="tags"
-                       @refreshTags="refreshTags"/>
-
-    <configure-tags-dialog v-model="openConfigureTagDialog"
-                           :tags="tags"
-                           @refreshTags="refreshTags"/>
-
   </div>
 </template>
 
 <script>
-import CreateTagDialog from "@/components/workingtime/tagselector/CreateTagDialog"
-import ConfigureTagsDialog from "@/components/workingtime/tagselector/ConfigureTagsDialog"
-
 export default {
-  components: {
-    CreateTagDialog,
-    ConfigureTagsDialog,
-  },
+  components: {},
   props: {
     tags: {
       type: Array,
@@ -66,10 +32,7 @@ export default {
       required: false,
     },
   },
-  data: () => ({
-    openCreateTagDialog: false,
-    openConfigureTagDialog: false,
-  }),
+  data: () => ({}),
   methods: {
     selectTag(tag) {
       if (tag === this.selectedTag) {
@@ -77,12 +40,6 @@ export default {
       } else {
         this.$emit('changeSelectedTag', tag)
       }
-    },
-    refreshTags() {
-      this.$emit('refreshTags', null)
-    },
-    configureTags() {
-
     },
   }
 }

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
@@ -17,36 +18,14 @@ type tagHandlers struct {
 
 type TagStore interface {
 	Create(tag repository.Tag) (*mongo.InsertOneResult, error)
-	FindAllActive(userID string) ([]repository.Tag, error)
-	Delete(tagID string, userID string) error
-}
-
-func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request) {
-	user, err := GetUserInfo(request)
-	if err != nil {
-		SendAuthorizationErrorJSON(writer, request, err)
-		return
-	}
-
-	tags, err := t.store.FindAllActive(user.ID)
-	if err != nil {
-		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get tag", ErrInternal)
-		return
-	}
-
-	render.Status(request, http.StatusOK)
-	render.JSON(writer, request, tags)
+	FindAllActive() ([]repository.Tag, error)
+	Update(tag repository.Tag) (string, error)
+	Delete(tagID string) error
 }
 
 func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) {
-	user, err := GetUserInfo(request)
-	if err != nil {
-		SendAuthorizationErrorJSON(writer, request, err)
-		return
-	}
-
 	var tag repository.Tag
-	err = json.NewDecoder(request.Body).Decode(&tag)
+	err := json.NewDecoder(request.Body).Decode(&tag)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
 		return
@@ -59,7 +38,6 @@ func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) 
 	}
 
 	tag.PrepareReceived()
-	tag.UserID = user.ID
 
 	result, err := t.store.Create(tag)
 	if err != nil || result == nil {
@@ -71,16 +49,54 @@ func (t *tagHandlers) create(writer http.ResponseWriter, request *http.Request) 
 	render.JSON(writer, request, R.JSON{"id": result.InsertedID})
 }
 
-func (t *tagHandlers) delete(writer http.ResponseWriter, request *http.Request) {
-	user, err := GetUserInfo(request)
+func (t *tagHandlers) findAll(writer http.ResponseWriter, request *http.Request) {
+	tags, err := t.store.FindAllActive()
 	if err != nil {
-		SendAuthorizationErrorJSON(writer, request, err)
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get tag", ErrInternal)
 		return
 	}
 
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, tags)
+}
+
+func (t *tagHandlers) update(writer http.ResponseWriter, request *http.Request) {
+	id := chi.URLParam(request, "id")
+	if len(id) == 0 {
+		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("id can't be empty"), "", ErrInternal)
+		return
+	}
+
+	var tag repository.Tag
+	err := json.NewDecoder(request.Body).Decode(&tag)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't parse json", ErrInternal)
+		return
+	}
+
+	err = t.validator.validate(&tag)
+	if err != nil {
+		SendValidationErrorJSON(writer, request, err)
+		return
+	}
+
+	tag.PrepareReceived()
+	tag.ID = id
+
+	id, err = t.store.Update(tag)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't update tag", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusCreated)
+	render.JSON(writer, request, R.JSON{"id": id})
+}
+
+func (t *tagHandlers) delete(writer http.ResponseWriter, request *http.Request) {
 	id := chi.URLParam(request, "id")
 
-	err = t.store.Delete(id, user.ID)
+	err := t.store.Delete(id)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete tag", ErrInternal)
 		return

@@ -49,6 +49,7 @@ export default {
   methods: {
     remove() {
       this.$emit('delete', '')
+      this.emitChange(false)
     },
     emitChange(value) {
       this.$emit('input', value)

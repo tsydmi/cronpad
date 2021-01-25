@@ -157,7 +157,7 @@ export default {
       this.deleteProjectDialog = true
     },
     deleteSelectedProject() {
-      ProjectService.delete(this.projectToDelete)
+      ProjectService.delete(this.projectToDelete.id)
           .then(() => this.refreshProjects())
     },
     clearFilters() {
@@ -172,7 +172,7 @@ export default {
       if (!project.users) {
         return ''
       }
-      
+
       return project.users
           .map(u => this.getFullNameById(u))
           .join(', ')
@@ -196,6 +196,6 @@ export default {
   created() {
     this.refreshProjects()
     this.refreshUsers()
-  }
+  },
 }
 </script>

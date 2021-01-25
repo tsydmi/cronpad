@@ -29,6 +29,9 @@
         <v-tab to="/projects" v-if="hasAdminRole">
           Projects
         </v-tab>
+        <v-tab to="/tags" v-if="hasAdminRole">
+          Tags
+        </v-tab>
         <v-tab to="/reports" v-if="hasAdminRole">
           Reports
         </v-tab>

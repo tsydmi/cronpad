@@ -43,4 +43,13 @@ export default {
 html {
   font-size: 1rem;
 }
+
+ .v-data-table > .v-data-table__wrapper > table > thead > tr > th {
+   font-size: 1rem !important;
+   font-weight: lighter;
+ }
+
+.v-data-table > .v-data-table__wrapper > table > tbody > tr > td {
+  font-size: 1rem !important;
+}
 </style>

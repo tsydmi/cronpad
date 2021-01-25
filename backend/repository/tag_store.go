@@ -19,14 +19,14 @@ func CreateTagStore(database *mongo.Database, uuidProvider utils.UuidProvider) *
 	return &TagStore{collection: database.Collection(collectionName), uuidProvider: uuidProvider}
 }
 
-func (t *TagStore) Create(record Tag) (*mongo.InsertOneResult, error) {
-	record.ID = t.uuidProvider.New()
-	result, err := t.collection.InsertOne(context.TODO(), record)
+func (t *TagStore) Create(tag Tag) (*mongo.InsertOneResult, error) {
+	tag.ID = t.uuidProvider.New()
+	result, err := t.collection.InsertOne(context.TODO(), tag)
 	return result, err
 }
 
-func (t *TagStore) FindAll(userID string) ([]Tag, error) {
-	filter := bson.D{{"userid", userID}}
+func (t *TagStore) FindAll() ([]Tag, error) {
+	filter := bson.D{}
 	cursor, err := t.collection.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
@@ -35,8 +35,8 @@ func (t *TagStore) FindAll(userID string) ([]Tag, error) {
 	return getTagResults(cursor)
 }
 
-func (t *TagStore) FindAllActive(userID string) ([]Tag, error) {
-	filter := bson.D{bson.E{Key: "userid", Value: userID}, isActive}
+func (t *TagStore) FindAllActive() ([]Tag, error) {
+	filter := bson.D{isActive}
 	cursor, err := t.collection.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
@@ -45,8 +45,16 @@ func (t *TagStore) FindAllActive(userID string) ([]Tag, error) {
 	return getTagResults(cursor)
 }
 
-func (t *TagStore) Delete(tagID string, userID string) error {
-	filter := bson.D{{"_id", tagID}, {"userid", userID}}
+func (t *TagStore) Update(tag Tag) (string, error) {
+	filter := bson.D{{"_id", tag.ID}}
+	var updatedTag Tag
+	err := t.collection.FindOneAndReplace(context.TODO(), filter, tag).Decode(&updatedTag)
+
+	return updatedTag.ID, err
+}
+
+func (t *TagStore) Delete(tagID string) error {
+	filter := bson.D{{"_id", tagID}}
 	update := bson.D{{"$set", bson.D{{"active", false}}}}
 
 	_, err := t.collection.UpdateOne(context.TODO(), filter, update)

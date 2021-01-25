@@ -2,54 +2,48 @@
   <v-dialog
       :value="value"
       @input="emitChange"
-      max-width="600px"
+      max-width="400px"
   >
     <v-card>
       <v-card-title>
-        <span class="headline">Create a new Project</span>
+        <span class="headline">Update a new Tag</span>
       </v-card-title>
       <v-card-text>
         <v-container>
-          <v-form
-              ref="form"
-              lazy-validation
-          >
+          <v-form ref="form" v-model="valid">
             <v-row>
               <v-text-field
                   label="Name"
-                  v-model="project.name"
+                  v-model="tag.name"
+                  @keydown.enter="saveTag"
                   :rules="rules.name"
-                  required
               ></v-text-field>
             </v-row>
-
             <v-row>
               <v-text-field
                   label="Description"
-                  v-model="project.description"
-                  :rules="rules.description"
+                  v-model="tag.description"
+                  @keydown.enter="saveTag"
                   required
               ></v-text-field>
             </v-row>
-
-            <v-row class="pt-4 pb-1">
-              <user-select v-model="project.users" :users="users"/>
+            <v-row>
+              <tag-color-picker v-model="tag.color"/>
             </v-row>
-
           </v-form>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-btn
-            color="primary"
+            color="blue darken-1"
             text
-            @click="save"
+            @click="saveTag"
         >
           Save
         </v-btn>
         <v-spacer></v-spacer>
         <v-btn
-            color="primary"
+            color="blue darken-1"
             text
             @click="emitChange(false)"
         >
@@ -61,13 +55,13 @@
 </template>
 
 <script>
-import ProjectService from "@/service/ProjectService"
-import UserSelect from "@/components/UserSelect"
+import TagService from "@/service/TagService"
+import TagColorPicker from "@/components/tags/TagColorPicker"
 
 export default {
-  name: "CreateProjectDialog",
+  name: "CreateTagDialog",
   components: {
-    UserSelect
+    TagColorPicker,
   },
 
   props: {
@@ -75,42 +69,32 @@ export default {
       type: Boolean,
       required: false,
     },
-    users: {
-      type: Array,
+    tag: {
+      type: Object,
       required: true,
-    }
+    },
   },
   data: () => ({
-    project: {},
+    valid: true,
     rules: {
       name: [
         v => !!v || 'Name is required',
       ],
-      description: [
-        v => !!v || 'Description is required',
-      ],
     },
   }),
   methods: {
-    save() {
+    saveTag() {
       if (this.$refs.form.validate()) {
-        ProjectService.create(this.project)
+        TagService.update(this.tag)
             .then(() => {
-              this.$emit('refreshProjects', null)
+              this.$emit('refreshTags', null)
               this.emitChange(false)
             })
       }
     },
     emitChange(value) {
       this.$emit('input', value)
-    },
-  },
-  watch: {
-    'value': function () {
-      if (this.value === false) {
-        this.$refs.form.reset()
-      }
     }
-  }
+  },
 }
 </script>

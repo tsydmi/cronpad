@@ -17,7 +17,7 @@ type reportDayStore interface {
 }
 
 type reportTagStore interface {
-	FindAll(userID string) ([]repository.Tag, error)
+	FindAll() ([]repository.Tag, error)
 }
 
 type reportProjectStore interface {
@@ -34,7 +34,7 @@ func (t *ReportService) Search(form repository.DaySearchForm) (ChartReport, erro
 		return ChartReport{}, err
 	}
 
-	tags, err := t.tagStore.FindAll(form.UserID)
+	tags, err := t.tagStore.FindAll()
 	if err != nil {
 		return ChartReport{}, err
 	}

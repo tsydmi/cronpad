@@ -94,8 +94,6 @@ func (s *RestServer) routes() http.Handler {
 
 		r.Route("/tags", func(routeUser chi.Router) {
 			routeUser.Get("/", s.tagHandlers.findAll)
-			routeUser.Post("/", s.tagHandlers.create)
-			routeUser.Delete("/{id}", s.tagHandlers.delete)
 		})
 
 		r.Route("/days", func(routeUser chi.Router) {
@@ -121,6 +119,12 @@ func (s *RestServer) routes() http.Handler {
 				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
 				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
+			})
+
+			routeAdmin.Route("/tags", func(routeUser chi.Router) {
+				routeUser.Post("/", s.tagHandlers.create)
+				routeUser.Put("/{id}", s.tagHandlers.update)
+				routeUser.Delete("/{id}", s.tagHandlers.delete)
 			})
 
 			routeAdmin.Get("/users", s.userHandlers.findAll)
