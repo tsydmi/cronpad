@@ -7,7 +7,7 @@ import Settings from "@/pages/Settings";
 import About from "@/pages/About";
 import Page404 from "@/pages/Page404";
 import Projects from "@/pages/Projects";
-import Reports from "@/pages/Reports";
+import Reports from "@/pages/UserReports";
 import Tags from "@/pages/Tags";
 
 const router = new VueRouter({
@@ -16,7 +16,7 @@ const router = new VueRouter({
         {path: '/', component: Home},
         {path: '/working-time', component: WorkingTime},
         {path: '/projects', component: Projects},
-        {path: '/reports', component: Reports},
+        {path: '/user-reports', component: Reports},
         {path: '/tags', component: Tags},
         {path: '/settings', component: Settings},
         {path: '/about', component: About},

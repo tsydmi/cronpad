@@ -32,8 +32,8 @@
         <v-tab to="/tags" v-if="hasAdminRole">
           Tags
         </v-tab>
-        <v-tab to="/reports" v-if="hasAdminRole">
-          Reports
+        <v-tab to="/user-reports" v-if="hasAdminRole">
+          User Reports
         </v-tab>
         <v-tab to="/settings">
           <em class="fas fa-cogs"></em>

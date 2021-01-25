@@ -52,16 +52,16 @@
 
 <script>
 import ReportService from "@/service/ReportService"
-import UserSection from "@/components/reports/UserSection"
+import UserSection from "@/components/userreports/UserSection"
 import PieChart from "@/components/PieChart"
-import DateRangeBarChart from "@/components/reports/DateRangeBarChart"
+import DateRangeBarChart from "@/components/userreports/DateRangeBarChart"
 import DateRangePicker from "@/components/DateRangePicker"
 import dayjs from 'dayjs'
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 
 export default {
-  name: "Reports",
+  name: "UserReports",
 
   components: {
     UserSection,
