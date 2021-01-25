@@ -17,7 +17,7 @@
           v-if="users && users.length > 0"
       >
         <v-list-item-action>
-          <v-icon :color="value !== undefined && value.length > 0 ? 'indigo darken-4' : ''">
+          <v-icon :color="value && value !== undefined && value.length > 0 ? 'indigo darken-4' : ''">
             {{ icon }}
           </v-icon>
         </v-list-item-action>

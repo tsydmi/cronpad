@@ -16,9 +16,6 @@ export default {
     findAll() {
         return axios.post(`/admin/projects/search`, {})
     },
-    getProjectDetails(project) {
-        return axios.get(`/admin/projects/${project.id}`)
-    },
     update(project) {
         return axios.put(`/admin/projects/${project.id}`, project)
     },

@@ -36,9 +36,23 @@
               <user-select v-model="project.users" :users="users"/>
             </v-row>
 
+            <v-row>
+              <date-picker label="From" v-model="project.start"/>
+            </v-row>
+
+            <v-row>
+              <date-picker label="To" v-model="project.end"/>
+            </v-row>
           </v-form>
         </v-container>
       </v-card-text>
+
+      <div class="d-flex justify-center">
+        <div class="pl-3 pr-3 global-form-error error--text">
+          {{ globalFormError }}
+        </div>
+      </div>
+
       <v-card-actions>
         <v-btn
             color="primary"
@@ -63,11 +77,13 @@
 <script>
 import ProjectService from "@/service/ProjectService"
 import UserSelect from "@/components/UserSelect"
+import DatePicker from "@/components/DatePicker"
 
 export default {
   name: "CreateProjectDialog",
   components: {
-    UserSelect
+    UserSelect,
+    DatePicker,
   },
 
   props: {
@@ -81,6 +97,7 @@ export default {
     }
   },
   data: () => ({
+    globalFormError: '',
     project: {},
     rules: {
       name: [
@@ -98,6 +115,11 @@ export default {
             .then(() => {
               this.$emit('refreshProjects', null)
               this.emitChange(false)
+            })
+            .catch(error => {
+              if (error && error.response && (error.response.status === 400 || error.response.status === 404)) {
+                this.globalFormError = error.response.data.error
+              }
             })
       }
     },

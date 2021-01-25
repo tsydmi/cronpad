@@ -1,10 +1,17 @@
 package repository
 
+import (
+	"errors"
+	"time"
+)
+
 type Project struct {
-	ID          string   `json:"id,omitempty" bson:"_id"`
-	Name        string   `json:"name" validate:"required,max=256"`
-	Description string   `json:"description" validate:"required,max=256"`
-	Users       []string `json:"users"`
+	ID          string     `json:"id,omitempty" bson:"_id"`
+	Name        string     `json:"name" validate:"required,max=256"`
+	Description string     `json:"description" validate:"required,max=256"`
+	Users       []string   `json:"users"`
+	Start       *time.Time `json:"start,omitempty" bson:"start,omitempty"`
+	End         *time.Time `json:"end,omitempty" bson:"end,omitempty"`
 }
 
 func (t *Project) PrepareReceived() {
@@ -16,5 +23,14 @@ func (t *Project) PrepareToSend() {
 }
 
 func (t *Project) IsValid() []error {
-	return nil
+	var errs []error
+
+	if t.Start == nil && t.End != nil {
+		errs = append(errs, errors.New("end date cannot be set without start date"))
+	}
+
+	if t.Start != nil && t.End != nil && t.Start.After(*t.End) {
+		errs = append(errs, errors.New("wrong date range"))
+	}
+	return errs
 }
