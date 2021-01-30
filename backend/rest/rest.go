@@ -20,7 +20,10 @@ type RestServer struct {
 	authenticator *AuthService
 	httpServer    *http.Server
 
-	tagHandlers          tagHandlers
+	tagHandlers        tagHandlers
+	projectTagHandlers projectTagHandlers
+	baseTagHandlers    baseTagHandlers
+
 	dayHandlers          dayHandlers
 	eventHandlers        eventHandlers
 	projectHandlers      projectHandlers
@@ -36,7 +39,7 @@ func (p *uuidProvider) New() string {
 	return uuid.New().String()
 }
 
-func CreateRestServer(database *mongo.Database, authenticator *AuthService, keycloakUrl string) *RestServer {
+func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloakUrl string) *RestServer {
 	uuidProvider := &uuidProvider{}
 	dayStore := repository.CreateDayStore(database, uuidProvider)
 	tagStore := repository.CreateTagStore(database, uuidProvider)
@@ -45,8 +48,12 @@ func CreateRestServer(database *mongo.Database, authenticator *AuthService, keyc
 	validator := CreateValidator()
 
 	return &RestServer{
-		authenticator:        authenticator,
-		tagHandlers:          tagHandlers{store: tagStore, validator: validator},
+		authenticator: &AuthService{jwtAuthService: jwtAuth},
+
+		tagHandlers:        tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
+		projectTagHandlers: projectTagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
+		baseTagHandlers:    baseTagHandlers{store: tagStore, validator: validator},
+
 		dayHandlers:          dayHandlers{store: dayStore},
 		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider), validator: validator},
 		projectHandlers:      projectHandlers{store: projectStore},
@@ -63,7 +70,10 @@ func (s *RestServer) Run() {
 		log.Fatalf("Application does not support HTTPS.")
 	} else {
 		s.httpServer = s.makeHTTPServer(9000, s.routes())
-		s.httpServer.ListenAndServe()
+		err := s.httpServer.ListenAndServe()
+		if err != nil {
+			log.Fatalf(err.Error())
+		}
 	}
 }
 
@@ -109,6 +119,15 @@ func (s *RestServer) routes() http.Handler {
 
 		r.Get("/projects", s.projectHandlers.findAllByUser)
 
+		// Project Manager
+		r.Route("/manager", func(routeManager chi.Router) {
+			routeManager.Use(s.authenticator.HasRole(projectManagerRole))
+
+			routeManager.Post("/tags/", s.projectTagHandlers.create)
+			routeManager.Put("/tags/{id}", s.projectTagHandlers.update)
+			routeManager.Delete("/tags/{id}", s.projectTagHandlers.delete)
+		})
+
 		// Admin
 		r.Route("/admin", func(routeAdmin chi.Router) {
 			routeAdmin.Use(s.authenticator.HasRole(adminRole))
@@ -121,10 +140,10 @@ func (s *RestServer) routes() http.Handler {
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
 			})
 
-			routeAdmin.Route("/tags", func(routeUser chi.Router) {
-				routeUser.Post("/", s.tagHandlers.create)
-				routeUser.Put("/{id}", s.tagHandlers.update)
-				routeUser.Delete("/{id}", s.tagHandlers.delete)
+			routeAdmin.Route("/base-tags", func(routeUser chi.Router) {
+				routeUser.Post("/", s.baseTagHandlers.create)
+				routeUser.Put("/{id}", s.baseTagHandlers.update)
+				routeUser.Delete("/{id}", s.baseTagHandlers.delete)
 			})
 
 			routeAdmin.Get("/users", s.userHandlers.findAll)

@@ -26,17 +26,25 @@ func (t *TagStore) Create(tag Tag) (*mongo.InsertOneResult, error) {
 }
 
 func (t *TagStore) FindAll() ([]Tag, error) {
-	filter := bson.D{}
-	cursor, err := t.collection.Find(context.TODO(), filter)
-	if err != nil {
-		return nil, err
-	}
-
-	return getTagResults(cursor)
+	return t.findAll(bson.D{})
 }
 
 func (t *TagStore) FindAllActive() ([]Tag, error) {
-	filter := bson.D{isActive}
+	return t.findAll(bson.D{isActive})
+}
+
+func (t *TagStore) FindAllBaseAndProjectActiveTags(projectIDs []string) ([]Tag, error) {
+	filter := bson.D{isActive,
+		{Key: "$or", Value: []bson.M{
+			{"basic": true},
+			{"project": bson.M{"$in": projectIDs}},
+		}},
+	}
+
+	return t.findAll(filter)
+}
+
+func (t *TagStore) findAll(filter bson.D) ([]Tag, error) {
 	cursor, err := t.collection.Find(context.TODO(), filter)
 	if err != nil {
 		return nil, err
@@ -46,15 +54,53 @@ func (t *TagStore) FindAllActive() ([]Tag, error) {
 }
 
 func (t *TagStore) Update(tag Tag) (string, error) {
-	filter := bson.D{{"_id", tag.ID}}
+	filter := bson.D{
+		{Key: "_id", Value: tag.ID},
+		{Key: "basic", Value: false},
+	}
+	return t.update(tag, filter)
+}
+
+func (t *TagStore) UpdateBaseTag(tag Tag) (string, error) {
+	filter := bson.D{
+		{Key: "_id", Value: tag.ID},
+		{Key: "basic", Value: true},
+	}
+	return t.update(tag, filter)
+}
+
+func (t *TagStore) update(tag Tag, filter bson.D) (string, error) {
 	var updatedTag Tag
 	err := t.collection.FindOneAndReplace(context.TODO(), filter, tag).Decode(&updatedTag)
 
 	return updatedTag.ID, err
 }
-
 func (t *TagStore) Delete(tagID string) error {
-	filter := bson.D{{"_id", tagID}}
+	filter := bson.D{
+		{"_id", tagID},
+		{Key: "basic", Value: false},
+	}
+	return t.delete(filter)
+}
+
+func (t *TagStore) DeleteByProjectID(tagID string, projectIDs []string) error {
+	filter := bson.D{
+		{Key: "_id", Value: tagID},
+		{Key: "project", Value: bson.M{"$in": projectIDs}},
+		{Key: "basic", Value: false},
+	}
+	return t.delete(filter)
+}
+
+func (t *TagStore) DeleteBaseTag(tagID string) error {
+	filter := bson.D{
+		{Key: "_id", Value: tagID},
+		{Key: "basic", Value: true},
+	}
+	return t.delete(filter)
+}
+
+func (t *TagStore) delete(filter bson.D) error {
 	update := bson.D{{"$set", bson.D{{"active", false}}}}
 
 	_, err := t.collection.UpdateOne(context.TODO(), filter, update)

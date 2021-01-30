@@ -43,7 +43,7 @@ func (t *ProjectStore) FindAllProjectsByUser(userID string) ([]Project, error) {
 	return getProjectResults(cursor)
 }
 
-func (t *ProjectStore) FindAllActiveProjectsByUser(userID string) ([]Project, error) {
+func (t *ProjectStore) FindAllActiveProjectsByUser(userID string) (Projects, error) {
 	filter := bson.D{bson.E{Key: "users", Value: userID}, isActive}
 	cursor, err := t.collection.Find(context.TODO(), filter)
 	if err != nil {

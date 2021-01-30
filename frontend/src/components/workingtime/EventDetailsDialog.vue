@@ -52,6 +52,7 @@
               item-text="name"
               return-object
               outlined
+              clearable
           />
           <v-select
               label="Project"
@@ -61,6 +62,7 @@
               item-text="name"
               return-object
               outlined
+              clearable
           />
         </v-card-text>
       </v-form>

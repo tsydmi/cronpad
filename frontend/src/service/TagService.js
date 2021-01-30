@@ -1,23 +1,35 @@
-import axios from "axios";
+import axios from "axios"
+import cloneDeep from 'clone-deep'
 
 export default {
     create(tag) {
-        return axios.post('/admin/tags', this.convertToBody(tag))
+        if (tag.basic) {
+            return axios.post('/admin/base-tags', this.convertToBody(tag))
+        } else {
+            return axios.post('/manager/tags', this.convertToBody(tag))
+        }
     },
     findAll() {
         return axios.get('/tags')
     },
     update(tag) {
-        return axios.put(`/admin/tags/${tag.id}`, this.convertToBody(tag))
+        if (tag.basic) {
+            return axios.put(`/admin/base-tags/${tag.id}`, this.convertToBody(tag))
+        } else {
+            return axios.put(`/manager/tags/${tag.id}`, this.convertToBody(tag))
+        }
     },
     delete(tag) {
-        return axios.delete(`/admin/tags/${tag.id}`)
-    },
-    convertToBody(tag) {
-        return {
-            name: tag.name,
-            description: tag.description,
-            color: tag.color.hex ? tag.color.hex : tag.color,
+        if (tag.basic) {
+            return axios.delete(`/admin/base-tags/${tag.id}`)
+        } else {
+            return axios.delete(`/manager/tags/${tag.id}`)
         }
+    },
+
+    convertToBody(tag) {
+        let body = cloneDeep(tag)
+        body.color = tag.color.hex ? tag.color.hex : tag.color
+        return body
     }
 }

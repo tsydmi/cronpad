@@ -27,12 +27,46 @@
                   required
               ></v-text-field>
             </v-row>
+            <v-row v-if="hasAdminRole">
+              <v-checkbox
+                  label="Basic"
+                  v-model="tag.basic"
+                  disabled
+              ></v-checkbox>
+            </v-row>
+            <v-row v-if="!tag.basic">
+              <v-select
+                  label="Parent"
+                  v-model="tag.parent"
+                  item-text="name"
+                  item-value="id"
+                  :items="tags"
+                  clearable
+              ></v-select>
+            </v-row>
+            <v-row v-if="!tag.basic">
+              <v-select
+                  label="Project"
+                  v-model="tag.project"
+                  item-text="name"
+                  item-value="id"
+                  :items="projects"
+                  clearable
+              ></v-select>
+            </v-row>
             <v-row>
               <tag-color-picker v-model="tag.color"/>
             </v-row>
           </v-form>
         </v-container>
       </v-card-text>
+
+      <div class="d-flex justify-center">
+        <div class="pl-3 pr-3 global-form-error error--text">
+          {{ globalFormError }}
+        </div>
+      </div>
+
       <v-card-actions>
         <v-btn
             color="blue darken-1"
@@ -73,9 +107,22 @@ export default {
       type: Object,
       required: true,
     },
+    tags: {
+      type: Array,
+      required: true,
+    },
+    projects: {
+      type: Array,
+      required: true,
+    },
+    hasAdminRole: {
+      type: Boolean,
+      required: true,
+    },
   },
   data: () => ({
     valid: true,
+    globalFormError: '',
     rules: {
       name: [
         v => !!v || 'Name is required',
@@ -90,10 +137,22 @@ export default {
               this.$emit('refreshTags', null)
               this.emitChange(false)
             })
+            .catch(error => {
+              if (error && error.response && (error.response.status === 400 || error.response.status === 404)) {
+                this.globalFormError = error.response.data.error
+              }
+            })
       }
     },
     emitChange(value) {
       this.$emit('input', value)
+    }
+  },
+  watch: {
+    'value': function () {
+      if (this.value === false) {
+        this.globalFormError = ''
+      }
     }
   },
 }

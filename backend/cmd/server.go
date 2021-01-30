@@ -31,7 +31,7 @@ func RunApp() {
 
 	defer client.Disconnect(ctx)
 
-	authenticator, err := rest.CreateAuthService(keycloakUrl, timeout)
+	authenticator, err := rest.CreateJwtAuthService(keycloakUrl, timeout)
 	if err != nil {
 		log.Fatal(err)
 	}

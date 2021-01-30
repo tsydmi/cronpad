@@ -11,7 +11,7 @@ type projectHandlers struct {
 }
 
 type ProjectStore interface {
-	FindAllActiveProjectsByUser(userID string) ([]repository.Project, error)
+	FindAllActiveProjectsByUser(userID string) (repository.Projects, error)
 }
 
 func (t *projectHandlers) findAllByUser(writer http.ResponseWriter, request *http.Request) {

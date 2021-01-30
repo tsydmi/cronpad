@@ -78,7 +78,7 @@ export default {
       this.selectedTag = null
     },
     refreshProjects() {
-      ProjectService.findCurrentUserProjects()
+      ProjectService.findAll()
           .then(response => this.projects = response.data);
     },
     refreshEvents() {

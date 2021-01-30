@@ -10,6 +10,7 @@
             item-value="id"
             item-text="name"
             dense
+            clearable
         ></v-select>
       </v-col>
       <v-col>
@@ -100,7 +101,7 @@ export default {
       }
     },
     refreshProjects() {
-      ProjectService.findAll()
+      ProjectService.findAll(true)
           .then((response) => this.projects = response.data)
     },
     getUserByIndex(i) {

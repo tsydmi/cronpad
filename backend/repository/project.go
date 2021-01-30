@@ -34,3 +34,25 @@ func (t *Project) IsValid() []error {
 	}
 	return errs
 }
+
+type Projects []Project
+
+func (p Projects) GetIDs() []string {
+	ids := make([]string, 0)
+
+	for _, project := range p {
+		ids = append(ids, project.ID)
+	}
+
+	return ids
+}
+
+func (p Projects) HasID(projectID string) bool {
+	for _, project := range p {
+		if project.ID == projectID {
+			return true
+		}
+	}
+
+	return false
+}

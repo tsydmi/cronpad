@@ -22,10 +22,6 @@
         </v-tooltip>
       </v-col>
 
-      <span v-if="!projects || projects.length === 0" class="inactive--text mt-10 justify-center d-flex">
-        No projects found
-      </span>
-
       <v-data-table
           :headers="projectsHeaders"
           :items="projects"

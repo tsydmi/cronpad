@@ -26,7 +26,7 @@ func SendAuthorizationErrorJSON(w http.ResponseWriter, r *http.Request, err erro
 	}
 
 	render.Status(r, http.StatusForbidden)
-	render.JSON(w, r, rest.JSON{"error": "user should be logged in", "code": ErrAuthorization})
+	render.JSON(w, r, rest.JSON{"error": "permission denied", "code": ErrAuthorization})
 }
 
 func SendErrorJSON(w http.ResponseWriter, r *http.Request, httpStatusCode int, err error, details string, errCode int) {

@@ -19,7 +19,7 @@ const getEnvironmentConfig = async () => {
     return await config.json()
 }
 
-getEnvironmentConfig().then(function (envJson){
+getEnvironmentConfig().then(function (envJson) {
     Vue.prototype.$http = axios
     axios.defaults.baseURL = envJson.VUE_APP_BACKEND_URL
 
@@ -27,7 +27,8 @@ getEnvironmentConfig().then(function (envJson){
         url: envJson.VUE_APP_KEYCLOAK_URL, realm: 'cronpad', clientId: 'vue-frontend', onLoad: 'login-required'
     }
 
-    let keycloak = Keycloak(initOptions);
+    let keycloak = Keycloak(initOptions)
+    Vue.prototype.$keycloak = keycloak
 
     keycloak.init({onLoad: initOptions.onLoad})
         .then((auth) => {

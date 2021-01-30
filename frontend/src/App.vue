@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <Header :keycloak="keycloak"/>
+    <Header/>
 
     <v-main>
       <v-container

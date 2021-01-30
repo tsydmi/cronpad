@@ -29,7 +29,7 @@
         <v-tab to="/projects" v-if="hasAdminRole">
           Projects
         </v-tab>
-        <v-tab to="/tags" v-if="hasAdminRole">
+        <v-tab to="/tags" v-if="hasManagerRole">
           Tags
         </v-tab>
         <v-tab to="/user-reports" v-if="hasAdminRole">
@@ -89,15 +89,11 @@
 </template>
 
 <script>
-const ADMIN_ROLE = 'user-manager'
+const ADMIN_ROLE = 'admin'
+const MANAGER_ROLE = 'project-manager'
 
 export default {
-  props: {
-    keycloak: {
-      type: Object,
-      required: true,
-    }
-  },
+  props: {},
   data: () => ({
     user: {
       initials: '',
@@ -105,10 +101,11 @@ export default {
       email: '',
     },
     hasAdminRole: false,
+    hasManagerRole: false,
   }),
   methods: {
     getInitials(fullName) {
-      var result = ""
+      let result = ""
 
       fullName.split(" ").forEach(name => {
         if (name.trim()) {
@@ -123,13 +120,14 @@ export default {
     }
   },
   created() {
-    this.keycloak.loadUserInfo()
+    this.$keycloak.loadUserInfo()
         .then(() => {
-          this.user.initials = this.getInitials(this.keycloak.userInfo.name)
-          this.user.fullName = this.keycloak.userInfo.name
-          this.user.email = this.keycloak.userInfo.email
+          this.user.initials = this.getInitials(this.$keycloak.userInfo.name)
+          this.user.fullName = this.$keycloak.userInfo.name
+          this.user.email = this.$keycloak.userInfo.email
 
-          this.hasAdminRole = this.keycloak.hasRealmRole(ADMIN_ROLE)
+          this.hasAdminRole = this.$keycloak.hasRealmRole(ADMIN_ROLE)
+          this.hasManagerRole = this.$keycloak.hasRealmRole(MANAGER_ROLE)
         })
   }
 }

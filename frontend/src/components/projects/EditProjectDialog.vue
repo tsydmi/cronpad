@@ -131,5 +131,12 @@ export default {
       this.$emit('input', value)
     },
   },
+  watch: {
+    'value': function () {
+      if (this.value === false) {
+        this.globalFormError = ''
+      }
+    },
+  },
 }
 </script>
