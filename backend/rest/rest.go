@@ -21,16 +21,12 @@ type RestServer struct {
 	authenticator *AuthService
 	httpServer    *http.Server
 
-	tagHandlers        tagHandlers
-	projectTagHandlers projectTagHandlers
-	baseTagHandlers    baseTagHandlers
-
-	dayHandlers          dayHandlers
-	eventHandlers        eventHandlers
-	projectHandlers      projectHandlers
-	adminProjectHandlers adminProjectHandlers
-	userHandlers         userHandlers
-	reportsHandlers      reportsHandlers
+	tagHandlers     tagHandlers
+	dayHandlers     dayHandlers
+	eventHandlers   eventHandlers
+	projectHandlers projectHandlers
+	managerHandlers managerHandlers
+	adminHandlers   adminHandlers
 }
 
 type uuidProvider struct {
@@ -42,25 +38,39 @@ func (p *uuidProvider) New() string {
 
 func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloakUrl string) *RestServer {
 	uuidProvider := &uuidProvider{}
+	validator := CreateValidator()
+
 	dayStore := repository.CreateDayStore(database, uuidProvider)
 	tagStore := repository.CreateTagStore(database, uuidProvider)
 	projectStore := repository.CreateProjectStore(database, uuidProvider)
+
 	userService := service.CreateUserService(keycloakUrl, projectStore)
-	validator := CreateValidator()
+	reportService := report.CreateReportService(dayStore, tagStore, projectStore)
+	eventService := service.CreateEventService(dayStore, uuidProvider)
 
 	return &RestServer{
 		authenticator: &AuthService{jwtAuthService: jwtAuth},
 
-		tagHandlers:        tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
-		projectTagHandlers: projectTagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
-		baseTagHandlers:    baseTagHandlers{store: tagStore, validator: validator},
+		tagHandlers:     tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
+		dayHandlers:     dayHandlers{store: dayStore},
+		eventHandlers:   eventHandlers{service: eventService, validator: validator},
+		projectHandlers: projectHandlers{store: projectStore, userService: userService},
 
-		dayHandlers:          dayHandlers{store: dayStore},
-		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider), validator: validator},
-		projectHandlers:      projectHandlers{store: projectStore, userService: userService},
-		adminProjectHandlers: adminProjectHandlers{store: projectStore, validator: validator, userService: userService},
-		userHandlers:         userHandlers{service: userService},
-		reportsHandlers:      reportsHandlers{service: report.CreateReportService(dayStore, tagStore, projectStore), projectStore: projectStore},
+		adminHandlers: adminHandlers{
+			validator:     validator,
+			projectStore:  projectStore,
+			baseTagStore:  tagStore,
+			userService:   userService,
+			reportService: reportService,
+		},
+
+		managerHandlers: managerHandlers{
+			validator:     validator,
+			projectStore:  projectStore,
+			tagStore:      tagStore,
+			userService:   userService,
+			reportService: reportService,
+		},
 	}
 }
 
@@ -124,12 +134,12 @@ func (s *RestServer) routes() http.Handler {
 		r.Route("/manager", func(routeManager chi.Router) {
 			routeManager.Use(s.authenticator.HasRole(projectManagerRole))
 
-			routeManager.Get("/project-reports/{id}", s.reportsHandlers.projectReport) //TODO check if user assigned to the project here!
-			routeManager.Get("/projects/{id}/users", s.projectHandlers.users)
+			routeManager.Get("/project-reports/{id}", s.managerHandlers.getProjectReport) //TODO check if user assigned to the project here!
+			routeManager.Get("/projects/{id}/users", s.managerHandlers.getProjectUsers)
 
-			routeManager.Post("/tags", s.projectTagHandlers.create)
-			routeManager.Put("/tags/{id}", s.projectTagHandlers.update)
-			routeManager.Delete("/tags/{id}", s.projectTagHandlers.delete)
+			routeManager.Post("/tags", s.managerHandlers.createTag)
+			routeManager.Put("/tags/{id}", s.managerHandlers.updateTag)
+			routeManager.Delete("/tags/{id}", s.managerHandlers.deleteTag)
 		})
 
 		// Admin
@@ -137,20 +147,20 @@ func (s *RestServer) routes() http.Handler {
 			routeAdmin.Use(s.authenticator.HasRole(adminRole))
 
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
-				routeAdminProject.Post("/", s.adminProjectHandlers.create)
-				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
-				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
-				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
+				routeAdminProject.Post("/", s.adminHandlers.createProject)
+				routeAdminProject.Post("/search", s.adminHandlers.findProject)
+				routeAdminProject.Put("/{id}", s.adminHandlers.updateProject)
+				routeAdminProject.Delete("/{id}", s.adminHandlers.deleteProject)
 			})
 
 			routeAdmin.Route("/base-tags", func(routeUser chi.Router) {
-				routeUser.Post("/", s.baseTagHandlers.create)
-				routeUser.Put("/{id}", s.baseTagHandlers.update)
-				routeUser.Delete("/{id}", s.baseTagHandlers.delete)
+				routeUser.Post("/", s.adminHandlers.createBaseTag)
+				routeUser.Put("/{id}", s.adminHandlers.updateBaseTag)
+				routeUser.Delete("/{id}", s.adminHandlers.deleteBaseTag)
 			})
 
-			routeAdmin.Get("/users", s.userHandlers.findAll)
-			routeAdmin.Post("/user-reports", s.reportsHandlers.userReport)
+			routeAdmin.Get("/users", s.adminHandlers.findAllUser)
+			routeAdmin.Post("/user-reports", s.adminHandlers.userReport)
 		})
 	})
 

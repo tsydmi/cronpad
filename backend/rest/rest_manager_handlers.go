@@ -7,24 +7,76 @@ import (
 	"github.com/go-chi/render"
 	R "github.com/go-pkgz/rest"
 	"github.com/ts-dmitry/cronpad/backend/repository"
+	"github.com/ts-dmitry/cronpad/backend/service"
+	"github.com/ts-dmitry/cronpad/backend/service/report"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
-type projectTagHandlers struct {
-	tagStore     ProjectTagStore
-	projectStore ProjectStore
-	validator    *FormValidator
+type managerHandlers struct {
+	validator     *FormValidator
+	projectStore  ProjectStore
+	tagStore      ManagerTagStore
+	userService   *service.UserService
+	reportService *report.ReportService
 }
 
-type ProjectTagStore interface {
+type ManagerTagStore interface {
 	Create(tag repository.Tag) (*mongo.InsertOneResult, error)
 	Update(tag repository.Tag) (string, error)
 	DeleteByProjectID(tagID string, projectIDs []string) error
 	Delete(tagID string) error
 }
 
-func (t *projectTagHandlers) create(writer http.ResponseWriter, request *http.Request) {
+func (h *managerHandlers) getProjectReport(writer http.ResponseWriter, request *http.Request) {
+	id := chi.URLParam(request, "id")
+	if len(id) == 0 {
+		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("id can't be empty"), "", ErrInternal)
+		return
+	}
+
+	err := h.verifyRightsForSelectedProject(request, id)
+	if err != nil {
+		SendAuthorizationErrorJSON(writer, request, err)
+		return
+	}
+
+	projectReport, err := h.reportService.CalculateProjectReport(id)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get report", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, projectReport)
+}
+
+func (h *managerHandlers) getProjectUsers(writer http.ResponseWriter, request *http.Request) {
+	projectID := chi.URLParam(request, "id")
+
+	token, err := GetAuthTokenFromHeader(request)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get authentication header", ErrInternal)
+		return
+	}
+
+	err = h.verifyRightsForSelectedProject(request, projectID)
+	if err != nil {
+		SendAuthorizationErrorJSON(writer, request, err)
+		return
+	}
+
+	report, err := h.userService.FindByProject(token, projectID)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't get users", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, report)
+}
+
+func (h *managerHandlers) createTag(writer http.ResponseWriter, request *http.Request) {
 	var tag repository.Tag
 	err := json.NewDecoder(request.Body).Decode(&tag)
 	if err != nil {
@@ -32,13 +84,13 @@ func (t *projectTagHandlers) create(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	err = t.validator.validate(&tag)
+	err = h.validator.validate(&tag)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 
-	err = t.verifyRightsForSelectedProject(request, tag.ProjectID)
+	err = h.verifyRightsForSelectedProject(request, tag.ProjectID)
 	if err != nil {
 		SendAuthorizationErrorJSON(writer, request, err)
 		return
@@ -46,7 +98,7 @@ func (t *projectTagHandlers) create(writer http.ResponseWriter, request *http.Re
 
 	tag.PrepareReceivedProjectTag()
 
-	result, err := t.tagStore.Create(tag)
+	result, err := h.tagStore.Create(tag)
 	if err != nil || result == nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't insert tag", ErrInternal)
 		return
@@ -56,7 +108,7 @@ func (t *projectTagHandlers) create(writer http.ResponseWriter, request *http.Re
 	render.JSON(writer, request, R.JSON{"id": result.InsertedID})
 }
 
-func (t *projectTagHandlers) update(writer http.ResponseWriter, request *http.Request) {
+func (h *managerHandlers) updateTag(writer http.ResponseWriter, request *http.Request) {
 	id := chi.URLParam(request, "id")
 	if len(id) == 0 {
 		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("id can't be empty"), "", ErrInternal)
@@ -70,13 +122,13 @@ func (t *projectTagHandlers) update(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	err = t.validator.validate(&tag)
+	err = h.validator.validate(&tag)
 	if err != nil {
 		SendValidationErrorJSON(writer, request, err)
 		return
 	}
 
-	err = t.verifyRightsForSelectedProject(request, tag.ProjectID)
+	err = h.verifyRightsForSelectedProject(request, tag.ProjectID)
 	if err != nil {
 		SendAuthorizationErrorJSON(writer, request, err)
 		return
@@ -85,7 +137,7 @@ func (t *projectTagHandlers) update(writer http.ResponseWriter, request *http.Re
 	tag.PrepareReceivedProjectTag()
 	tag.ID = id
 
-	id, err = t.tagStore.Update(tag)
+	id, err = h.tagStore.Update(tag)
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusBadRequest, err, "can't update tag", ErrInternal)
 		return
@@ -95,7 +147,7 @@ func (t *projectTagHandlers) update(writer http.ResponseWriter, request *http.Re
 	render.JSON(writer, request, R.JSON{"id": id})
 }
 
-func (t *projectTagHandlers) delete(writer http.ResponseWriter, request *http.Request) {
+func (h *managerHandlers) deleteTag(writer http.ResponseWriter, request *http.Request) {
 	id := chi.URLParam(request, "id")
 	if len(id) == 0 {
 		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("id can't be empty"), "", ErrInternal)
@@ -108,13 +160,13 @@ func (t *projectTagHandlers) delete(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
-	projects, err := t.projectStore.FindAllActiveProjectsByUser(userInfo.ID)
+	projects, err := h.projectStore.FindAllActiveProjectsByUser(userInfo.ID)
 	if err != nil {
 		SendAuthorizationErrorJSON(writer, request, err)
 		return
 	}
 
-	err = t.tagStore.DeleteByProjectID(id, projects.GetIDs())
+	err = h.tagStore.DeleteByProjectID(id, projects.GetIDs())
 	if err != nil {
 		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't delete tag", ErrInternal)
 		return
@@ -124,7 +176,7 @@ func (t *projectTagHandlers) delete(writer http.ResponseWriter, request *http.Re
 	render.JSON(writer, request, R.JSON{"id": id})
 }
 
-func (t *projectTagHandlers) verifyRightsForSelectedProject(request *http.Request, projectID string) error {
+func (h *managerHandlers) verifyRightsForSelectedProject(request *http.Request, projectID string) error {
 	userInfo, err := GetUserInfo(request)
 	if err != nil {
 		return err
@@ -134,7 +186,7 @@ func (t *projectTagHandlers) verifyRightsForSelectedProject(request *http.Reques
 		return nil
 	}
 
-	projects, err := t.projectStore.FindAllActiveProjectsByUser(userInfo.ID)
+	projects, err := h.projectStore.FindAllActiveProjectsByUser(userInfo.ID)
 	if err != nil {
 		return err
 	}
