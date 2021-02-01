@@ -10,4 +10,5 @@ RUN apk --no-cache add ca-certificates
 RUN addgroup cronpad && adduser --disabled-password cronpad -G cronpad
 USER cronpad
 COPY --from=builder --chown=cronpad:cronpad /cronpad .
-CMD ["./cronpad"]  
+HEALTHCHECK --interval=30s --timeout=3s CMD curl --fail http://localhost:9000/api/health || exit 1
+CMD ["./cronpad"]

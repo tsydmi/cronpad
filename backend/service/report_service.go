@@ -1,7 +1,8 @@
-package report
+package service
 
 import (
 	"github.com/ts-dmitry/cronpad/backend/repository"
+	"github.com/ts-dmitry/cronpad/backend/service/report"
 )
 
 type ReportService struct {
@@ -27,45 +28,45 @@ func CreateReportService(dayStore reportDayStore, tagStore reportTagStore, proje
 	return &ReportService{dayStore: dayStore, tagStore: tagStore, projectStore: projectStore}
 }
 
-func (t *ReportService) CalculateUserReport(form repository.DaySearchForm) (UserReport, error) {
+func (t *ReportService) CalculateUserReport(form repository.DaySearchForm) (report.UserReport, error) {
 	days, err := t.dayStore.Search(form)
 	if err != nil {
-		return UserReport{}, err
+		return report.UserReport{}, err
 	}
 
 	tags, err := t.tagStore.FindAll()
 	if err != nil {
-		return UserReport{}, err
+		return report.UserReport{}, err
 	}
 
 	projects, err := t.projectStore.FindAllProjectsByUser(form.UserID)
 	if err != nil {
-		return UserReport{}, err
+		return report.UserReport{}, err
 	}
 
-	return CreateUserReport(days, tags, projects, form.From.UTC(), form.To.UTC()), nil
+	return report.CreateUserReport(days, tags, projects, form.From.UTC(), form.To.UTC()), nil
 }
 
-func (t *ReportService) CalculateProjectReport(projectID string) (ProjectReport, error) {
+func (t *ReportService) CalculateProjectReport(projectID string) (report.ProjectReport, error) {
 	project, err := t.projectStore.GetProjectByID(projectID)
 	if err != nil {
-		return ProjectReport{}, err
+		return report.ProjectReport{}, err
 	}
 
 	var days = make([]repository.Day, 0) //TODO filter days here or return projection form mongo?
 	if len(project.Users) > 0 {
 		days, err = t.dayStore.Search(daySearhcFormFromProject(project))
 		if err != nil {
-			return ProjectReport{}, err
+			return report.ProjectReport{}, err
 		}
 	}
 
 	tags, err := t.tagStore.FindAll()
 	if err != nil {
-		return ProjectReport{}, err
+		return report.ProjectReport{}, err
 	}
 
-	return CreateProjectReport(project, days, tags), nil
+	return report.CreateProjectReport(project, days, tags), nil
 }
 
 func daySearhcFormFromProject(project repository.Project) repository.DaySearchForm {

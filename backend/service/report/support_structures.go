@@ -5,19 +5,6 @@ import (
 	"time"
 )
 
-type stringValuesPerKeyMap map[string][]string
-
-func (h stringValuesPerKeyMap) increment(key string, user string) {
-	value, ok := h[key]
-	if ok {
-		if !utils.Contains(value, user) {
-			h[key] = append(value, user)
-		}
-	} else {
-		h[key] = []string{user}
-	}
-}
-
 type hoursPerKeyMap map[string]float64
 
 func (h hoursPerKeyMap) increment(key string, hours float64) {

@@ -8,7 +8,11 @@ const adminRole = "admin"
 const projectManagerRole = "project-manager"
 
 type AuthService struct {
-	jwtAuthService *JwtAuthService
+	authenticator Authenticator
+}
+
+type Authenticator interface {
+	verify(token string) error
 }
 
 func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
@@ -19,7 +23,7 @@ func (a *AuthService) HttpMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		err = a.jwtAuthService.verify(token)
+		err = a.authenticator.verify(token)
 		if err != nil {
 			SendAuthorizationErrorJSON(w, r, err)
 			return

@@ -5,12 +5,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/render"
 	log "github.com/go-pkgz/lgr"
 	R "github.com/go-pkgz/rest"
 	"github.com/google/uuid"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"github.com/ts-dmitry/cronpad/backend/service"
-	"github.com/ts-dmitry/cronpad/backend/service/report"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
 	"net/http"
@@ -45,11 +45,11 @@ func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloa
 	projectStore := repository.CreateProjectStore(database, uuidProvider)
 
 	userService := service.CreateUserService(keycloakUrl, projectStore)
-	reportService := report.CreateReportService(dayStore, tagStore, projectStore)
+	reportService := service.CreateReportService(dayStore, tagStore, projectStore)
 	eventService := service.CreateEventService(dayStore, uuidProvider)
 
 	return &RestServer{
-		authenticator: &AuthService{jwtAuthService: jwtAuth},
+		authenticator: &AuthService{authenticator: jwtAuth},
 
 		tagHandlers:     tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
 		dayHandlers:     dayHandlers{store: dayStore},
@@ -108,6 +108,10 @@ func (s *RestServer) routes() http.Handler {
 		MaxAge:           300,
 	})
 	router.Use(corsMiddleware.Handler)
+
+	router.Get("/api/health", func(writer http.ResponseWriter, request *http.Request) {
+		render.Status(request, http.StatusOK)
+	})
 
 	router.Route("/api/v1", func(r chi.Router) {
 		r.Use(middleware.Timeout(30 * time.Second))

@@ -8,7 +8,6 @@ import (
 	R "github.com/go-pkgz/rest"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"github.com/ts-dmitry/cronpad/backend/service"
-	"github.com/ts-dmitry/cronpad/backend/service/report"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
@@ -18,7 +17,7 @@ type managerHandlers struct {
 	projectStore  ProjectStore
 	tagStore      ManagerTagStore
 	userService   *service.UserService
-	reportService *report.ReportService
+	reportService *service.ReportService
 }
 
 type ManagerTagStore interface {
