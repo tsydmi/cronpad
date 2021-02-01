@@ -130,12 +130,16 @@ func (t *projectTagHandlers) verifyRightsForSelectedProject(request *http.Reques
 		return err
 	}
 
+	if userInfo.hasRole(adminRole) {
+		return nil
+	}
+
 	projects, err := t.projectStore.FindAllActiveProjectsByUser(userInfo.ID)
 	if err != nil {
 		return err
 	}
 
-	if projects.HasID(projectID) {
+	if !projects.HasID(projectID) {
 		return errors.New("user does not have rights for selected project")
 	}
 

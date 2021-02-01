@@ -35,6 +35,9 @@
         <v-tab to="/user-reports" v-if="hasAdminRole">
           User Reports
         </v-tab>
+        <v-tab to="/project-statistics" v-if="hasManagerRole">
+          Project Statistics
+        </v-tab>
         <v-tab to="/settings">
           <em class="fas fa-cogs"></em>
         </v-tab>

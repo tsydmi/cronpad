@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"github.com/ts-dmitry/cronpad/backend/service"
+	"github.com/ts-dmitry/cronpad/backend/service/report"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
 	"net/http"
@@ -56,10 +57,10 @@ func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloa
 
 		dayHandlers:          dayHandlers{store: dayStore},
 		eventHandlers:        eventHandlers{service: service.CreateEventService(dayStore, uuidProvider), validator: validator},
-		projectHandlers:      projectHandlers{store: projectStore},
+		projectHandlers:      projectHandlers{store: projectStore, userService: userService},
 		adminProjectHandlers: adminProjectHandlers{store: projectStore, validator: validator, userService: userService},
 		userHandlers:         userHandlers{service: userService},
-		reportsHandlers:      reportsHandlers{service: service.CreateReportService(dayStore, tagStore, projectStore)},
+		reportsHandlers:      reportsHandlers{service: report.CreateReportService(dayStore, tagStore, projectStore), projectStore: projectStore},
 	}
 }
 
@@ -123,7 +124,10 @@ func (s *RestServer) routes() http.Handler {
 		r.Route("/manager", func(routeManager chi.Router) {
 			routeManager.Use(s.authenticator.HasRole(projectManagerRole))
 
-			routeManager.Post("/tags/", s.projectTagHandlers.create)
+			routeManager.Get("/project-reports/{id}", s.reportsHandlers.projectReport) //TODO check if user assigned to the project here!
+			routeManager.Get("/projects/{id}/users", s.projectHandlers.users)
+
+			routeManager.Post("/tags", s.projectTagHandlers.create)
 			routeManager.Put("/tags/{id}", s.projectTagHandlers.update)
 			routeManager.Delete("/tags/{id}", s.projectTagHandlers.delete)
 		})
@@ -134,7 +138,6 @@ func (s *RestServer) routes() http.Handler {
 
 			routeAdmin.Route("/projects", func(routeAdminProject chi.Router) {
 				routeAdminProject.Post("/", s.adminProjectHandlers.create)
-				routeAdminProject.Get("/{id}/users", s.adminProjectHandlers.users)
 				routeAdminProject.Post("/search", s.adminProjectHandlers.search)
 				routeAdminProject.Put("/{id}", s.adminProjectHandlers.update)
 				routeAdminProject.Delete("/{id}", s.adminProjectHandlers.delete)
@@ -147,7 +150,7 @@ func (s *RestServer) routes() http.Handler {
 			})
 
 			routeAdmin.Get("/users", s.userHandlers.findAll)
-			routeAdmin.Post("/reports", s.reportsHandlers.search)
+			routeAdmin.Post("/user-reports", s.reportsHandlers.userReport)
 		})
 	})
 

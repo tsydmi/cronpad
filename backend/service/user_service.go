@@ -21,7 +21,7 @@ func CreateUserService(keycloakUrl string, projectStore ProjectStore) *UserServi
 }
 
 type ProjectStore interface {
-	GetProjectWithUsersByID(projectID string) (repository.Project, error)
+	GetProjectByID(projectID string) (repository.Project, error)
 }
 
 func (t *UserService) FindAll(token string) ([]User, error) {
@@ -67,7 +67,7 @@ func (t *UserService) FindByProject(token string, projectID string) ([]User, err
 		return nil, err
 	}
 
-	project, err := t.projectStore.GetProjectWithUsersByID(projectID)
+	project, err := t.projectStore.GetProjectByID(projectID)
 	if err != nil {
 		return nil, err
 	}

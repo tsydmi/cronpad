@@ -36,7 +36,7 @@
           <span> {{ getNameById(projects, item.project) }} </span>
         </template>
         <template v-slot:item.color="{ item }">
-          <v-icon v-bind:color="item.color">mdi-format-color-highlight</v-icon>
+          <v-icon :color="item.color">mdi-format-color-highlight</v-icon>
         </template>
 
         <template v-slot:item.actions="{ item }">

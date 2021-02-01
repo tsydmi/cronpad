@@ -21,6 +21,10 @@ export default {
       type: Object,
       required: false,
     },
+    sum: {
+      type: Number,
+      required: false,
+    },
   },
   data: () => ({
     chart: null,
@@ -45,7 +49,28 @@ export default {
           title: {
             display: true,
             text: this.title
-          }
+          },
+          tooltips: {
+            callbacks: {
+              title: function (tooltipItems, data) {
+                let value = data.datasets[0].data[tooltipItems[0].index]
+
+                if (value === 1 || value === '1') {
+                  return ` ${value} hour`
+                } else {
+                  return ` ${value} hours`
+                }
+              }.bind(this),
+              label: function (tooltipItems, data) {
+                if (this.sum) {
+                  let value = data.datasets[0].data[tooltipItems.index]
+                  return ` ${(value*100/this.sum).toFixed(2)} %`
+                }
+
+                return ''
+              }.bind(this),
+            },
+          },
         },
       });
     },

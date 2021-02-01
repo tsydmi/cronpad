@@ -10,7 +10,6 @@
             item-value="id"
             item-text="name"
             dense
-            clearable
         ></v-select>
       </v-col>
       <v-col>

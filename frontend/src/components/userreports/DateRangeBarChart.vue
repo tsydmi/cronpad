@@ -3,7 +3,8 @@
 </template>
 
 <script>
-import Chart from "chart.js";
+import Chart from "chart.js"
+import dayjs from "dayjs"
 
 export default {
   name: "DateRangeBarChart",
@@ -59,6 +60,15 @@ export default {
           layout: {
             padding: {
               right: 20
+            },
+          },
+          tooltips: {
+            enabled: true,
+            mode: 'single',
+            callbacks: {
+              title: function(tooltipItem) {
+                return dayjs(tooltipItem[0].label).format('YYYY-MM-DD')
+              },
             },
           },
         },

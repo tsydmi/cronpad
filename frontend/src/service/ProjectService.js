@@ -5,7 +5,7 @@ export default {
         return axios.post('/admin/projects', project)
     },
     getUsers(projectID) {
-        return axios.get(`/admin/projects/${projectID}/users`)
+        return axios.get(`/manager/projects/${projectID}/users`)
     },
     search(search) {
         return axios.post(`/admin/projects/search`, search)

@@ -9,6 +9,7 @@ import Page404 from "@/pages/Page404";
 import Projects from "@/pages/Projects";
 import Reports from "@/pages/UserReports";
 import Tags from "@/pages/Tags";
+import ProjectStatistics from "@/pages/ProjectStatistics";
 
 const router = new VueRouter({
     mode: 'history',
@@ -18,6 +19,7 @@ const router = new VueRouter({
         {path: '/projects', component: Projects},
         {path: '/user-reports', component: Reports},
         {path: '/tags', component: Tags},
+        {path: '/project-statistics', component: ProjectStatistics},
         {path: '/settings', component: Settings},
         {path: '/about', component: About},
         {path: "*", component: Page404}

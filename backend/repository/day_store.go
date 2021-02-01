@@ -70,6 +70,10 @@ func (t *DayStore) Search(form DaySearchForm) ([]Day, error) {
 		filters = append(filters, bson.E{Key: "userid", Value: form.UserID})
 	}
 
+	if len(form.UserIDs) > 0 {
+		filters = append(filters, bson.E{Key: "userid", Value: bson.M{"$in": form.UserIDs}})
+	}
+
 	cursor, err := t.collection.Find(context.TODO(), filters)
 	if err != nil {
 		return nil, err
@@ -96,8 +100,6 @@ func getDayResults(cursor *mongo.Cursor) ([]Day, error) {
 			log.Fatal(err)
 		}
 
-		elem.PrepareToSend()
-
 		results = append(results, elem)
 	}
 
@@ -105,7 +107,8 @@ func getDayResults(cursor *mongo.Cursor) ([]Day, error) {
 }
 
 type DaySearchForm struct {
-	UserID string
-	From   time.Time
-	To     time.Time
+	UserID  string
+	From    time.Time
+	To      time.Time
+	UserIDs []string
 }

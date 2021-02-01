@@ -22,10 +22,10 @@
               <span>Summary: {{ hoursSum }} hours </span>
             </v-col>
             <v-col cols="6">
-              <pie-chart element-id="tag-chart" v-model="tagChartData" title="Tags"/>
+              <pie-chart element-id="tag-chart" v-model="tagChartData" :sum="hoursSum" title="Tags"/>
             </v-col>
             <v-col cols="6">
-              <pie-chart element-id="project-chart" v-model="projectChartData" title="Projects"/>
+              <pie-chart element-id="project-chart" v-model="projectChartData" :sum="hoursSum" title="Projects"/>
             </v-col>
             <v-col cols="12">
               <date-range-bar-chart element-id="data-range-chart" v-model="dateRangeChartData"/>
@@ -35,7 +35,13 @@
                   :headers="eventsTableHeaders"
                   :items="eventsTableData"
                   hide-default-footer
-              ></v-data-table>
+              >
+                <template v-slot:item.tags="{ item }">
+                  <span :key="tag.id" v-for="tag in getTagsByIDs(item.tags)" :style="{color: tag.color}">
+                    {{ tag.name }}
+                  </span>
+                </template>
+              </v-data-table>
             </v-col>
           </div>
 
@@ -57,6 +63,7 @@ import PieChart from "@/components/PieChart"
 import DateRangeBarChart from "@/components/userreports/DateRangeBarChart"
 import DateRangePicker from "@/components/DateRangePicker"
 import dayjs from 'dayjs'
+import TagService from "@/service/TagService";
 
 const DATE_FORMAT = 'YYYY-MM-DD'
 
@@ -83,10 +90,12 @@ export default {
 
     eventsTableHeaders: [
       {text: 'Event Name', value: 'name'},
+      {text: 'Tags', value: 'tags'},
       {text: 'Hours', value: 'hours'},
       {text: 'Percent', value: 'percent', sortable: false}
     ],
     eventsTableData: [],
+    tags: [],
   }),
   methods: {
     selectUser(user) {
@@ -95,7 +104,7 @@ export default {
       this.refreshReports()
     },
     changeDate() {
-      if(this.dateRange.length === 2) {
+      if (this.dateRange.length === 2) {
         let first = dayjs(this.dateRange[0], DATE_FORMAT)
         let second = dayjs(this.dateRange[1], DATE_FORMAT)
 
@@ -105,6 +114,18 @@ export default {
       }
 
       this.refreshReports()
+    },
+    getTagsByIDs(ids) {
+      if (!ids) {
+        return ''
+      }
+
+      return ids
+          .filter(function (id) {
+            return id !== null && id !== ''
+          })
+          .map(id => this.tags.find(e => e.id === id))
+          .filter(tag => !!tag)
     },
     refreshReports() {
       let search = {}
@@ -134,12 +155,16 @@ export default {
           .then(response => {
             this.tagChartData = response.data.tagChart
             this.projectChartData = response.data.projectChart
-            this.dateRangeChartData = response.data.dateRangeChartDataSets;
+            this.dateRangeChartData = response.data.dateRangeChartDataSets
 
             this.eventsTableData = response.data.eventSummaryTable
             this.hoursSum = response.data.hoursSum
           });
     },
+  },
+  created() {
+    TagService.findAll(true)
+        .then(response => this.tags = response.data)
   },
 }
 </script>

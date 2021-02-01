@@ -25,7 +25,7 @@ func (t *ProjectStore) Create(record Project) (*mongo.InsertOneResult, error) {
 	return result, err
 }
 
-func (t *ProjectStore) GetProjectWithUsersByID(projectID string) (Project, error) {
+func (t *ProjectStore) GetProjectByID(projectID string) (Project, error) {
 	filter := bson.D{{"_id", projectID}}
 	var project Project
 	err := t.collection.FindOne(context.TODO(), filter).Decode(&project)

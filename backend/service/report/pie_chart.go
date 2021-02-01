@@ -1,4 +1,4 @@
-package service
+package report
 
 const titleForUnknown = "Unknown"
 const colorForUnknown = "#E0E0E0"
@@ -16,7 +16,7 @@ type PieChartDataSet struct {
 	BackgroundColor []string  `json:"backgroundColor"`
 }
 
-func createPieChart(hoursPerTag map[string]float64, tagMap map[string]ChartSource) PieChart {
+func createPieChart(hoursPerTag map[string]float64, tagMap map[string]chartSource) PieChart {
 	data := make([]float64, 0)
 	colors := make([]string, 0)
 	labels := make([]string, 0)
