@@ -65,8 +65,9 @@ func CreateProjectReport(project repository.Project, days []repository.Day, tags
 				daysPassed = int64(project.End.Sub(*project.Start).Hours() / 24)
 				daysAhead = 0
 			} else {
+				daysBetween := int64(project.End.Sub(*project.Start).Hours() / 24)
 				daysPassed = int64(now.Sub(*project.Start).Hours() / 24)
-				daysAhead = int64(project.End.Sub(now).Hours() / 24)
+				daysAhead = daysBetween - daysPassed
 			}
 		}
 	}
