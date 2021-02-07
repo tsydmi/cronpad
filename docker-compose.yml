@@ -22,3 +22,19 @@ services:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
       - KEYCLOAK_IMPORT=/tmp/realm-export.json
+      # - KEYCLOAK_LOGLEVEL=DEBUG
+
+  cronpad:
+    build: .
+    ports:
+      - 4000:4000
+      - 9000:9000
+    environment:
+      - CRONPAD_URL=http://<host-address>:9000
+      - KEYCLOAK_URL=http://<host-address>:8080
+      - MONGO_HOST=mongo
+      - MONGO_USER=user
+      - MONGO_PASSWORD=pwd
+    depends_on:
+      - mongo
+      - keycloak

@@ -71,7 +71,7 @@ func tryToGetCerts(keycloakUrl string) (JWK, error) {
 		return jwks.Keys[0], nil
 	}
 
-	log.Println("[INFO] attempt to connect to keycloak server")
+	log.Printf("[INFO] attempt to connect to keycloak server (%v)\n", keycloakUrl)
 	return JWK{}, err
 }
 
