@@ -119,7 +119,7 @@ export default {
       return result
     },
     signOut() {
-      this.keycloak.logout()
+      this.$keycloak.logout()
     }
   },
   created() {
