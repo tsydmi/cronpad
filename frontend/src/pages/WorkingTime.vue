@@ -53,7 +53,6 @@ export default {
     events: [],
     days: [],
     selectedTag: null,
-    selectedProject: null,
   }),
   methods: {
     updateValue(value) {

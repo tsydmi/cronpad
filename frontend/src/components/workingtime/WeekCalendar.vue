@@ -333,6 +333,13 @@ export default {
   beforeDestroy() {
     document.removeEventListener('keyup', this.keyUpEscapeListener)
   },
+  watch: {
+    'projects': function () {
+      if (this.projects.length === 1) {
+        this.selectedProject = this.projects[0]
+      }
+    },
+  },
 }
 </script>
 
