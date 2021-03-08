@@ -23,7 +23,7 @@ services:
 
   cronpad:
     build: .
-    # image: docker.pkg.github.com/ts-dmitry/cronpad/proxy:latest
+    # image: docker.pkg.github.com/ts-dmitry/cronpad/cronpad:latest
     environment:
       - CRONPAD_URL=http://<host-address>
       - KEYCLOAK_URL=http://<host-address>
