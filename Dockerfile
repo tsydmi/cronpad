@@ -53,4 +53,6 @@ COPY --chown=cronpad:cronpad supervisord.conf /etc/supervisor/conf.d/supervisord
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=6 CMD wget --no-verbose --tries=1 --spider http://localhost:9000/api/health || exit 1
 
+EXPOSE 4000 9000
+
 ENTRYPOINT ["supervisord", "--nodaemon", "--configuration", "etc/supervisor/conf.d/supervisord.conf"]
