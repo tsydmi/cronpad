@@ -3,8 +3,7 @@ version: '3'
 services:
   mongo:
     build: ./docker/mongo
-    ports:
-      - 27017:27017
+    # image: docker.pkg.github.com/ts-dmitry/cronpad/mongo:latest
     command: [--auth]
     environment:
       - MONGO_INITDB_USERNAME=user
@@ -15,9 +14,7 @@ services:
 
   keycloak:
     build: ./docker/keycloak
-    ports:
-      - 8080:8080
-      - 8443:8443
+    # image: docker.pkg.github.com/ts-dmitry/cronpad/keycloak:latest
     environment:
       - KEYCLOAK_USER=admin
       - KEYCLOAK_PASSWORD=admin
@@ -26,15 +23,22 @@ services:
 
   cronpad:
     build: .
-    ports:
-      - 4000:4000
-      - 9000:9000
+    # image: docker.pkg.github.com/ts-dmitry/cronpad/proxy:latest
     environment:
-      - CRONPAD_URL=http://<host-address>:9000
-      - KEYCLOAK_URL=http://<host-address>:8080
+      - CRONPAD_URL=http://<host-address>
+      - KEYCLOAK_URL=http://<host-address>
       - MONGO_HOST=mongo
       - MONGO_USER=user
       - MONGO_PASSWORD=pwd
     depends_on:
       - mongo
+      - keycloak
+
+  proxy:
+    build: ./docker/reverse-proxy
+    # image: docker.pkg.github.com/ts-dmitry/cronpad/proxy:latest
+    ports:
+      - 80:80
+    depends_on:
+      - cronpad
       - keycloak

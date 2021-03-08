@@ -24,7 +24,7 @@
   "actionTokenGeneratedByUserLifespan": 300,
   "enabled": true,
   "sslRequired": "external",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "rememberMe": false,
   "verifyEmail": false,
@@ -673,18 +673,18 @@
     {
       "id": "434d5fc6-634d-4c6b-b6cd-3cc11c6df0e9",
       "clientId": "vue-frontend",
-      "rootUrl": "http://localhost:4000/",
-      "adminUrl": "http://localhost:4000/",
+      "rootUrl": "http://localhost/",
+      "adminUrl": "http://localhost/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "http://localhost:4000/*"
+        "http://localhost/*"
       ],
       "webOrigins": [
-        "http://localhost:4000"
+        "http://localhost"
       ],
       "notBefore": 0,
       "bearerOnly": false,
