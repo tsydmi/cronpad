@@ -133,18 +133,31 @@ export default {
     },
     getRealDayOfWeek(date) {
       return (date.getDay() + 6) % 7
-    }
+    },
   },
   created() {
     let date = dayjs()
     this.today = date.format(VALUE_FORMAT)
     this.value = date.format(VALUE_FORMAT)
 
-    this.refreshTags()
-    this.refreshProjects()
-  },
-  mounted() {
-    this.refreshEvents()
+    let getTagsAsync = new Promise((resolve, reject) =>
+        TagService.findAll()
+            .then(response => resolve(response.data))
+            .catch(() => reject())
+    );
+
+    let getProjectsAsync = new Promise((resolve, reject) =>
+        ProjectService.findAll()
+            .then(response => resolve(response.data))
+            .catch(() => reject())
+    );
+
+    Promise.all([getTagsAsync, getProjectsAsync])
+        .then(responses => {
+          this.tags = responses[0]
+          this.projects = responses[1]
+          this.refreshEvents()
+        })
   },
 };
 </script>
