@@ -2,40 +2,33 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/ts-dmitry/cronpad/backend/rest"
-	"log"
 	"time"
 )
 
-const timeout = 2 * time.Minute
+const keycloakTimeout = 2 * time.Minute
 
-func RunApp() {
-	mongoConfig := mongoConfig{
-		host:     getEnv("MONGO_HOST", "localhost"),
-		port:     getEnv("MONGO_PORT", "27017"),
-		db:       getEnv("MONGO_DB", "cronpad"),
-		username: getEnv("MONGO_USER", "user"),
-		password: getEnv("MONGO_PASSWORD", "pwd"),
+func RunApp() error {
+	mongoConfig := getMongoConfig()
+	client, err := connectToMongo(context.TODO(), mongoConfig)
+	if err != nil {
+		return err
 	}
+
+	defer func() {
+		err := client.Disconnect(context.TODO())
+		if err == nil {
+			fmt.Println("Connection to MongoDB is closed.")
+		}
+	}()
+
 	keycloakUrl := getEnv("KEYCLOAK_URL", "http://localhost:8080")
-
-	client, err := createMongoClient(mongoConfig)
+	authenticator, err := rest.CreateJwtAuthService(keycloakUrl, keycloakTimeout)
 	if err != nil {
-		log.Fatal(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer client.Disconnect(ctx)
-
-	authenticator, err := rest.CreateJwtAuthService(keycloakUrl, timeout)
-	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	server := rest.CreateRestServer(client.Database(mongoConfig.db), authenticator, keycloakUrl)
-	server.Run()
+	return server.Run()
 }

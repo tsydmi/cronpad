@@ -74,7 +74,7 @@ func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloa
 	}
 }
 
-func (s *RestServer) Run() {
+func (s *RestServer) Run() error {
 	useSsl := false
 
 	if useSsl {
@@ -83,9 +83,13 @@ func (s *RestServer) Run() {
 		s.httpServer = s.makeHTTPServer(9000, s.routes())
 		err := s.httpServer.ListenAndServe()
 		if err != nil {
-			log.Fatalf(err.Error())
+			return err
 		}
 	}
+
+	defer s.Shutdown()
+
+	return nil
 }
 
 func (s *RestServer) makeHTTPServer(port int, router http.Handler) *http.Server {
@@ -138,7 +142,7 @@ func (s *RestServer) routes() http.Handler {
 		r.Route("/manager", func(routeManager chi.Router) {
 			routeManager.Use(s.authenticator.HasRole(projectManagerRole))
 
-			routeManager.Get("/project-reports/{id}", s.managerHandlers.getProjectReport) //TODO check if user assigned to the project here!
+			routeManager.Get("/project-reports/{id}", s.managerHandlers.getProjectReport)
 			routeManager.Get("/projects/{id}/users", s.managerHandlers.getProjectUsers)
 
 			routeManager.Post("/tags", s.managerHandlers.createTag)

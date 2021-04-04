@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"os"
@@ -14,7 +16,17 @@ type mongoConfig struct {
 	password string
 }
 
-func createMongoClient(config mongoConfig) (*mongo.Client, error) {
+func getMongoConfig() mongoConfig {
+	return mongoConfig{
+		host:     getEnv("MONGO_HOST", "localhost"),
+		port:     getEnv("MONGO_PORT", "27017"),
+		db:       getEnv("MONGO_DB", "cronpad"),
+		username: getEnv("MONGO_USER", "user"),
+		password: getEnv("MONGO_PASSWORD", "pwd"),
+	}
+}
+
+func connectToMongo(ctx context.Context, config mongoConfig) (*mongo.Client, error) {
 	credential := options.Credential{
 		AuthSource: config.db,
 		Username:   config.username,
@@ -23,7 +35,18 @@ func createMongoClient(config mongoConfig) (*mongo.Client, error) {
 
 	clientOptions := options.Client().ApplyURI("mongodb://" + config.host + ":" + config.port).SetAuth(credential)
 
-	client, err := mongo.NewClient(clientOptions)
+	client, err := mongo.Connect(ctx, clientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Connection to MongoDB is opened.")
+
 	return client, err
 }
 
