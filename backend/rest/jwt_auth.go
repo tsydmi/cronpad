@@ -36,25 +36,10 @@ type JwtAuthService struct {
 	publicKey *rsa.PublicKey
 }
 
-func CreateJwtAuthService(keycloakUrl string, timeout time.Duration) (*JwtAuthService, error) {
+func CreateJwtAuthService(keycloakUrl string) (*JwtAuthService, error) {
 	cert, err := tryToGetCerts(keycloakUrl)
 	if err != nil {
-		ticker := time.NewTicker(15 * time.Second)
-		defer ticker.Stop()
-
-		timeoutExceeded := time.After(timeout)
-		for {
-			select {
-			case <-timeoutExceeded:
-				return nil, fmt.Errorf("keycloak connection failed after %s timeout", timeout)
-
-			case <-ticker.C:
-				cert, err := tryToGetCerts(keycloakUrl)
-				if err == nil {
-					return &JwtAuthService{publicKey: getPublicKeyFromJWK(cert)}, nil
-				}
-			}
-		}
+		return nil, err
 	}
 
 	return &JwtAuthService{publicKey: getPublicKeyFromJWK(cert)}, nil
@@ -71,7 +56,6 @@ func tryToGetCerts(keycloakUrl string) (JWK, error) {
 		return jwks.Keys[0], nil
 	}
 
-	log.Printf("[INFO] attempt to connect to keycloak server (%v)\n", keycloakUrl)
 	return JWK{}, err
 }
 

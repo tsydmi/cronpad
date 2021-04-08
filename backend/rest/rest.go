@@ -36,9 +36,14 @@ func (p *uuidProvider) New() string {
 	return uuid.New().String()
 }
 
-func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloakUrl string) *RestServer {
+func CreateRestServer(database *mongo.Database, keycloakUrl string) (*RestServer, error) {
 	uuidProvider := &uuidProvider{}
 	validator := CreateValidator()
+
+	jwtAuth, err := CreateJwtAuthService(keycloakUrl)
+	if err != nil {
+		return nil, err
+	}
 
 	dayStore := repository.CreateDayStore(database, uuidProvider)
 	tagStore := repository.CreateTagStore(database, uuidProvider)
@@ -71,7 +76,7 @@ func CreateRestServer(database *mongo.Database, jwtAuth *JwtAuthService, keycloa
 			userService:   userService,
 			reportService: reportService,
 		},
-	}
+	}, nil
 }
 
 func (s *RestServer) Run() error {
@@ -161,10 +166,10 @@ func (s *RestServer) routes() http.Handler {
 				routeAdminProject.Delete("/{id}", s.adminHandlers.deleteProject)
 			})
 
-			routeAdmin.Route("/base-tags", func(routeUser chi.Router) {
-				routeUser.Post("/", s.adminHandlers.createBaseTag)
-				routeUser.Put("/{id}", s.adminHandlers.updateBaseTag)
-				routeUser.Delete("/{id}", s.adminHandlers.deleteBaseTag)
+			routeAdmin.Route("/base-tags", func(routeAdminBaseTag chi.Router) {
+				routeAdminBaseTag.Post("/", s.adminHandlers.createBaseTag)
+				routeAdminBaseTag.Put("/{id}", s.adminHandlers.updateBaseTag)
+				routeAdminBaseTag.Delete("/{id}", s.adminHandlers.deleteBaseTag)
 			})
 
 			routeAdmin.Get("/users", s.adminHandlers.findAllUser)

@@ -2,12 +2,9 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"github.com/ts-dmitry/cronpad/backend/rest"
-	"time"
+	"log"
 )
-
-const keycloakTimeout = 2 * time.Minute
 
 func RunApp() error {
 	mongoConfig := getMongoConfig()
@@ -19,16 +16,20 @@ func RunApp() error {
 	defer func() {
 		err := client.Disconnect(context.TODO())
 		if err == nil {
-			fmt.Println("Connection to MongoDB is closed.")
+			log.Println("Connection to MongoDB is closed.")
 		}
 	}()
 
 	keycloakUrl := getEnv("KEYCLOAK_URL", "http://localhost:8080")
-	authenticator, err := rest.CreateJwtAuthService(keycloakUrl, keycloakTimeout)
+	err = keycloakHealthCheck(keycloakUrl)
 	if err != nil {
 		return err
 	}
 
-	server := rest.CreateRestServer(client.Database(mongoConfig.db), authenticator, keycloakUrl)
+	server, err := rest.CreateRestServer(client.Database(mongoConfig.db), keycloakUrl)
+	if err != nil {
+		return err
+	}
+
 	return server.Run()
 }

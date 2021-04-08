@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 	"os"
 )
 
@@ -45,7 +45,7 @@ func connectToMongo(ctx context.Context, config mongoConfig) (*mongo.Client, err
 		return nil, err
 	}
 
-	fmt.Println("Connection to MongoDB is opened.")
+	log.Println("Connection to MongoDB is opened.")
 
 	return client, err
 }
