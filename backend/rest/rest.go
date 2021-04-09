@@ -18,7 +18,7 @@ import (
 )
 
 type RestServer struct {
-	authenticator *AuthService
+	authenticator *Authenticator
 	httpServer    *http.Server
 
 	tagHandlers     tagHandlers
@@ -40,7 +40,7 @@ func CreateRestServer(database *mongo.Database, keycloakUrl string) (*RestServer
 	uuidProvider := &uuidProvider{}
 	validator := CreateValidator()
 
-	jwtAuth, err := CreateJwtAuthService(keycloakUrl)
+	jwtAuth, err := service.CreateJwtAuthService(keycloakUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func CreateRestServer(database *mongo.Database, keycloakUrl string) (*RestServer
 	eventService := service.CreateEventService(dayStore, uuidProvider)
 
 	return &RestServer{
-		authenticator: &AuthService{authenticator: jwtAuth},
+		authenticator: &Authenticator{tokenVerifier: jwtAuth},
 
 		tagHandlers:     tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
 		dayHandlers:     dayHandlers{store: dayStore},

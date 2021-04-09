@@ -1,4 +1,4 @@
-package rest
+package service
 
 import (
 	"bytes"
@@ -45,7 +45,7 @@ func CreateJwtAuthService(keycloakUrl string) (*JwtAuthService, error) {
 	return &JwtAuthService{publicKey: getPublicKeyFromJWK(cert)}, nil
 }
 
-func (j *JwtAuthService) verify(token string) error {
+func (j *JwtAuthService) Verify(token string) error {
 	return verifySignature(token, j.publicKey)
 }
 

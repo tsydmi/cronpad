@@ -31,7 +31,7 @@ func get(t *testing.T, url string) (string, int) {
 
 func startup() (ts *httptest.Server, server *RestServer, teardown func()) {
 	server = &RestServer{
-		authenticator: &AuthService{authenticator: &TestAuthenticator{}},
+		authenticator: &Authenticator{tokenVerifier: &TestAuthenticator{}},
 	}
 
 	ts = httptest.NewServer(server.routes())
@@ -45,6 +45,6 @@ func startup() (ts *httptest.Server, server *RestServer, teardown func()) {
 
 type TestAuthenticator struct{}
 
-func (a *TestAuthenticator) verify(token string) error {
+func (a *TestAuthenticator) Verify(token string) error {
 	return nil
 }
