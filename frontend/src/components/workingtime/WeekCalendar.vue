@@ -127,6 +127,10 @@ export default {
       type: Object,
       required: false,
     },
+    selectedProject: {
+      type: Object,
+      required: false,
+    },
     events: {
       type: Array,
       required: true,
@@ -144,7 +148,6 @@ export default {
     dragEvent: null,
     extendEvent: null,
     createEvent: null,
-    selectedProject: null,
     selectedEvent: {},
     selectedElement: null,
     detailsModalOpen: false,
@@ -294,9 +297,9 @@ export default {
     },
     selectProject(project) {
       if (project === this.selectedProject) {
-        this.selectedProject = null
+        this.$emit('changeSelectedProject', null)
       } else {
-        this.selectedProject = project
+        this.$emit('changeSelectedProject', project)
       }
     },
     saveEvent(event) {
@@ -345,13 +348,6 @@ export default {
   },
   beforeDestroy() {
     document.removeEventListener('keyup', this.keyUpEscapeListener)
-  },
-  watch: {
-    'projects': function () {
-      if (this.projects.length === 1) {
-        this.selectedProject = this.projects[0]
-      }
-    },
   },
 }
 </script>

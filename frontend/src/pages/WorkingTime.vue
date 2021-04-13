@@ -3,18 +3,19 @@
     <v-col lg="9" md="8" sm="12">
       <v-card elevation="4">
         <WeekCalendar
-            :events="events" :projects="projects" :tags="tags"
+            :events="events" :projects="projects" :selected-project="selectedProject" :tags="tags"
             :value="value" :selected-tag="selectedTag"
             @addEventToList="addEventToList"
             @refreshEvents="refreshEvents"
-            @changeCalendarValue="updateValue"/>
+            @changeCalendarValue="updateValue"
+            @changeSelectedProject="updateSelectedProject"/>
       </v-card>
     </v-col>
     <v-col lg="3" md="4" sm="12" class="pl-4 pr-4">
       <v-card elevation="4">
         <MonthCalendar :today="today" :value="value" :days="days"
                        @changeCalendarValue="updateValue"/>
-        <TagSelector :tags="tags" :selected-tag="selectedTag"
+        <TagSelector :tags="tags" :selected-tag="selectedTag" :projects="projects"
                      @changeSelectedTag="updateSelectedTag"
                      @refreshTags="refreshTags"/>
       </v-card>
@@ -53,6 +54,7 @@ export default {
     events: [],
     days: [],
     selectedTag: null,
+    selectedProject: null,
   }),
   methods: {
     updateValue(value) {
@@ -67,6 +69,15 @@ export default {
     },
     updateSelectedTag(tag) {
       this.selectedTag = tag
+      if (tag && tag.project) {
+        this.selectedProject = this.projects.find(p => p.id === tag.project)
+      }
+    },
+    updateSelectedProject(project) {
+      this.selectedProject = project
+      if (this.selectedTag && this.selectedTag.project) {
+        this.selectedTag = null
+      }
     },
     addEventToList(event) {
       this.events.push(event)
