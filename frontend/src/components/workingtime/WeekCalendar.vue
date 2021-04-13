@@ -56,8 +56,8 @@
         v-model="value"
         color="primary"
         type="week"
-        first-interval="6"
-        interval-count="18"
+        :first-interval="firstInterval"
+        :interval-count="intevalCount"
         interval-height="32"
         interval-minutes="60"
         weekdays="1, 2, 3, 4, 5, 6, 0"
@@ -150,6 +150,9 @@ export default {
     detailsModalOpen: false,
     createEventModalOpen: false,
     keyUpEscapeListener: null,
+
+    firstInterval: 6,
+    intevalCount: 18,
   }),
   methods: {
     nextWeek() {
@@ -329,6 +332,16 @@ export default {
     }
 
     document.addEventListener('keyup', this.keyUpEscapeListener)
+
+    if (localStorage.minTimeRange && localStorage.maxTimeRange) {
+      const min = parseInt(localStorage.minTimeRange)
+      const max = parseInt(localStorage.maxTimeRange)
+
+      this.firstInterval = min == 0 ? 0 : min - 1
+      
+      const count = max - min + 2
+      this.intevalCount = count > 24 ? 24 : count
+    }
   },
   beforeDestroy() {
     document.removeEventListener('keyup', this.keyUpEscapeListener)

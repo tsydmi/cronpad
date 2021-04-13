@@ -92,6 +92,8 @@
 </template>
 
 <script>
+import SettingsService from "@/service/SettingsService"
+
 const ADMIN_ROLE = 'admin'
 const MANAGER_ROLE = 'project-manager'
 
@@ -132,6 +134,16 @@ export default {
           this.hasAdminRole = this.$keycloak.hasRealmRole(ADMIN_ROLE)
           this.hasManagerRole = this.$keycloak.hasRealmRole(MANAGER_ROLE)
         })
+    
+    if (!localStorage.minTimeRange || !localStorage.maxTimeRange) {
+      SettingsService.get()
+        .then(response => {
+          const timeRange = response.data.timeRange
+          
+          localStorage.minTimeRange = timeRange.min
+          localStorage.maxTimeRange = timeRange.max
+        })
+    }
   }
 }
 </script>

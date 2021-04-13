@@ -21,12 +21,13 @@ type RestServer struct {
 	authenticator *Authenticator
 	httpServer    *http.Server
 
-	tagHandlers     tagHandlers
-	dayHandlers     dayHandlers
-	eventHandlers   eventHandlers
-	projectHandlers projectHandlers
-	managerHandlers managerHandlers
-	adminHandlers   adminHandlers
+	tagHandlers      tagHandlers
+	dayHandlers      dayHandlers
+	eventHandlers    eventHandlers
+	projectHandlers  projectHandlers
+	settingsHandlers settingsHandlers
+	managerHandlers  managerHandlers
+	adminHandlers    adminHandlers
 }
 
 type uuidProvider struct {
@@ -56,10 +57,11 @@ func CreateRestServer(database *mongo.Database, keycloakUrl string) (*RestServer
 	return &RestServer{
 		authenticator: &Authenticator{tokenVerifier: jwtAuth},
 
-		tagHandlers:     tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
-		dayHandlers:     dayHandlers{store: dayStore},
-		eventHandlers:   eventHandlers{service: eventService, validator: validator},
-		projectHandlers: projectHandlers{store: projectStore, userService: userService},
+		tagHandlers:      tagHandlers{tagStore: tagStore, projectStore: projectStore, validator: validator},
+		dayHandlers:      dayHandlers{store: dayStore},
+		eventHandlers:    eventHandlers{service: eventService, validator: validator},
+		settingsHandlers: settingsHandlers{store: repository.CreateSettingsStore(database), validator: validator},
+		projectHandlers:  projectHandlers{store: projectStore, userService: userService},
 
 		adminHandlers: adminHandlers{
 			validator:     validator,
@@ -139,6 +141,11 @@ func (s *RestServer) routes() http.Handler {
 			routeUser.Post("/", s.eventHandlers.create)
 			routeUser.Put("/{id}", s.eventHandlers.update)
 			routeUser.Delete("/{id}", s.eventHandlers.delete)
+		})
+
+		r.Route("/settings", func(routeUser chi.Router) {
+			routeUser.Get("/", s.settingsHandlers.get)
+			routeUser.Put("/", s.settingsHandlers.update)
 		})
 
 		r.Get("/projects", s.projectHandlers.findAllByUser)
