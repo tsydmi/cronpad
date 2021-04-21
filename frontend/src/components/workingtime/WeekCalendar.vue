@@ -58,7 +58,7 @@
         type="week"
         :first-interval="firstInterval"
         :interval-count="intevalCount"
-        interval-height="32"
+        :interval-height="calcIntervalHeight()"
         interval-minutes="60"
         weekdays="1, 2, 3, 4, 5, 6, 0"
         :events="events"
@@ -111,6 +111,10 @@ import dayjs from 'dayjs'
 import cloneDeep from 'clone-deep'
 
 const VALUE_FORMAT = 'YYYY-MM-DD'
+const MIN_EVENT_HEIGHT = 24
+const MAX_EVENT_HEIGHT = 48
+const DEFAULT_EVENT_HEIGHT = 32
+const DEFAULT_WEAK_HOURS = 10
 
 export default {
   components: {
@@ -158,6 +162,27 @@ export default {
     intevalCount: 18,
   }),
   methods: {
+    calcIntervalHeight() {
+      if (localStorage.minTimeRange || localStorage.maxTimeRange) {
+        const min = parseInt(localStorage.minTimeRange)
+        const max = parseInt(localStorage.maxTimeRange)
+
+        const calculatedHeight = DEFAULT_EVENT_HEIGHT * DEFAULT_WEAK_HOURS / (max - min);
+
+        if (calculatedHeight >= MIN_EVENT_HEIGHT && calculatedHeight <= MAX_EVENT_HEIGHT) {
+          return calculatedHeight
+        } else {
+          if (calculatedHeight < MIN_EVENT_HEIGHT) {
+            return MIN_EVENT_HEIGHT
+          }
+          if (calculatedHeight > MAX_EVENT_HEIGHT) {
+            return MAX_EVENT_HEIGHT
+          }
+        }
+      }
+
+      return DEFAULT_EVENT_HEIGHT
+    },
     nextWeek() {
       this.$emit('changeCalendarValue', dayjs(this.value, VALUE_FORMAT).add(7, 'days').format(VALUE_FORMAT))
     },
