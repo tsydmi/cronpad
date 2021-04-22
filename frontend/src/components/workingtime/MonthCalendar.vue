@@ -7,7 +7,10 @@
         :value="value"
     >
       <template v-slot:day-label="{day, weekday, month, year, present, date}">
-        <div class="" @click="selectDay(date)">
+        <div
+            @click="selectDay(date)"
+            class="v-calendar-day-slot"
+        >
           <div
               v-bind:class="['d-flex justify-center',
               {
@@ -27,22 +30,18 @@
       </template>
 
       <template v-slot:day="{ past, date }">
-        <v-row
-            class="align-end mr-1 ml-1"
-        >
-          <template>
-            <v-sheet
-                v-for="(event, i) in getEvents(date)"
-                :key="i"
-                :title="event.name"
-                :color="event.color"
-                :width="`${100*getEventDurationHours(event)/8}%`"
-                height="5px"
-                tile
-            >
-            </v-sheet>
-          </template>
-        </v-row>
+        <div class="d-flex align-end">
+          <v-sheet
+              v-for="(event, i) in getEvents(date)"
+              :key="i"
+              :title="event.name"
+              :color="event.color"
+              :width="`${100*getEventDurationHours(event)/8}%`"
+              height="5px"
+              tile
+          >
+          </v-sheet>
+        </div>
       </template>
     </v-calendar>
   </div>
@@ -141,5 +140,8 @@ export default {
 <style scoped>
 .v-calendar-month--selected-week {
   background-color: #b0bec51f;
+}
+.v-calendar-day-slot {
+  min-height: 24px
 }
 </style>
