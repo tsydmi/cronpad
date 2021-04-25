@@ -8,6 +8,7 @@ import (
 	R "github.com/go-pkgz/rest"
 	"github.com/ts-dmitry/cronpad/backend/repository"
 	"net/http"
+	"time"
 )
 
 type eventHandlers struct {
@@ -19,6 +20,7 @@ type EventService interface {
 	Create(record repository.Event, userID string) (string, error)
 	Update(event repository.Event, userID string) (string, error)
 	Delete(eventID string, userID string) error
+	GetUsedNames(userID string, tagID string, from time.Time, to time.Time) ([]string, error)
 }
 
 func (t *eventHandlers) create(writer http.ResponseWriter, request *http.Request) {
@@ -109,4 +111,29 @@ func (t *eventHandlers) delete(writer http.ResponseWriter, request *http.Request
 
 	render.Status(request, http.StatusOK)
 	render.JSON(writer, request, R.JSON{"id": id})
+}
+
+func (t *eventHandlers) getUsedNames(writer http.ResponseWriter, request *http.Request) {
+	user, err := GetUserInfo(request)
+	if err != nil {
+		SendAuthorizationErrorJSON(writer, request, err)
+		return
+	}
+
+	tagID := chi.URLParam(request, "tagID")
+	if len(tagID) == 0 {
+		SendErrorJSON(writer, request, http.StatusBadRequest, errors.New("tag id can't be empty"), "", ErrInternal)
+		return
+	}
+
+	now := time.Now()
+
+	names, err := t.service.GetUsedNames(user.ID, tagID, now.AddDate(0, 0, -14), now)
+	if err != nil {
+		SendErrorJSON(writer, request, http.StatusInternalServerError, err, "can't get events", ErrInternal)
+		return
+	}
+
+	render.Status(request, http.StatusOK)
+	render.JSON(writer, request, names)
 }

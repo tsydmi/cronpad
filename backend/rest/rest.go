@@ -141,6 +141,7 @@ func (s *RestServer) routes() http.Handler {
 			routeUser.Post("/", s.eventHandlers.create)
 			routeUser.Put("/{id}", s.eventHandlers.update)
 			routeUser.Delete("/{id}", s.eventHandlers.delete)
+			routeUser.Get("/names/{tagID}", s.eventHandlers.getUsedNames)
 		})
 
 		r.Route("/settings", func(routeUser chi.Router) {

@@ -89,6 +89,39 @@ func (t *DayStore) Update(day Day) (Day, error) {
 	return day, err
 }
 
+func (t *DayStore) GetUsedNames(userID string, tagID string, from time.Time, to time.Time) ([]string, error) {
+	match := []bson.M{
+		{"$match": bson.M{
+			"date": bson.M{
+				"$gte": from,
+				"$lte": to,
+			},
+			"userid": userID,
+			"events": bson.M{
+				"$elemMatch": bson.M{"tagid": tagID},
+			},
+		}},
+		{"$sort": bson.M{"date": -1}},
+		{"$unwind": bson.M{"path": "$events"}},
+		{"$group": bson.M{
+			"_id": bson.M{
+				"name":  "$events.name",
+				"tagid": tagID,
+			},
+			"date": bson.M{"$first": "$date"},
+		}},
+		{"$project": bson.M{"name": "$_id.name"}},
+		{"$limit": 5},
+	}
+
+	cursor, err := t.collection.Aggregate(context.TODO(), match)
+	if err != nil {
+		return nil, err
+	}
+
+	return getUsedEventNamesResults(cursor)
+}
+
 func getDayResults(cursor *mongo.Cursor) ([]Day, error) {
 	var results = make([]Day, 0)
 
@@ -111,4 +144,25 @@ type DaySearchForm struct {
 	From    time.Time
 	To      time.Time
 	UserIDs []string
+}
+
+type usedEventNames struct {
+	Name string
+}
+
+func getUsedEventNamesResults(cursor *mongo.Cursor) ([]string, error) {
+	var results = make([]string, 0)
+
+	for cursor.Next(context.TODO()) {
+		var elem usedEventNames
+
+		err := cursor.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		results = append(results, elem.Name)
+	}
+
+	return results, nil
 }

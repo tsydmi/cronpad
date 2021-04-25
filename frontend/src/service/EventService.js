@@ -10,6 +10,9 @@ export default {
     delete(event) {
         return axios.delete(`/events/${event.id}`)
     },
+    getUsedNames(tag) {
+        return axios.get(`/events/names/${tag.id}`)
+    },
     convertEventToRequestBody(event) {
         return {
             start: new Date(event.start).toISOString(),

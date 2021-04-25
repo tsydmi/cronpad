@@ -25,6 +25,17 @@
           ></v-text-field>
         </v-card-text>
 
+        <div class="text-center">
+          <v-btn v-for="usedName in usedNames" :key="usedName"
+                 class="ma-1"
+                 text
+                 color="inactive"
+                 @click="name = usedName"
+          >
+            {{ usedName }}
+          </v-btn>
+        </div>
+
         <v-card-actions>
           <v-btn
               class="ma-2"
@@ -68,6 +79,7 @@ export default {
   data: () => ({
     name: "",
     valid: true,
+    usedNames: [],
     rules: {
       name: [
         v => !!v || 'Name is required',
@@ -113,6 +125,9 @@ export default {
     'value': function () {
       if (this.value === false) {
         this.$refs.form.reset()
+      } else {
+        EventService.getUsedNames(this.event.tag)
+            .then(response => this.usedNames = response.data)
       }
     }
   },

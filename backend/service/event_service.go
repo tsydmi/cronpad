@@ -18,6 +18,7 @@ type DayStore interface {
 	FindByDate(date time.Time, userID string) (repository.Day, error)
 	FindByDateRange(from time.Time, to time.Time, userID string) ([]repository.Day, error)
 	Update(day repository.Day) (repository.Day, error)
+	GetUsedNames(userID string, tagID string, from time.Time, to time.Time) ([]string, error)
 }
 
 func CreateEventService(dayStore DayStore, uuidProvider utils.UuidProvider) *EventService {
@@ -76,6 +77,10 @@ func (t *EventService) Delete(eventID string, userID string) error {
 	day.Events = deleteEventFromSlice(day.Events, eventID)
 	_, err = t.dayStore.Update(day)
 	return err
+}
+
+func (e *EventService) GetUsedNames(userID string, tagID string, from time.Time, to time.Time) ([]string, error) {
+	return e.dayStore.GetUsedNames(userID, tagID, from, to)
 }
 
 func deleteEventFromSlice(events []repository.Event, eventID string) []repository.Event {
